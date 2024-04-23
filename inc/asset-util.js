@@ -1,24 +1,9 @@
 import "dotenv/config";
 import FormData from "form-data";
-import fs from "fs";
 
-const {
-  SOURCE_OAUTH_TOKEN,
-  SOURCE_PUBLIC_ACCESS_TOKEN,
-  SOURCE_SPACE_ID,
-  TARGET_OAUTH_TOKEN,
-  TARGET_PUBLIC_ACCESS_TOKEN,
-  TARGET_SPACE_ID,
-} = process.env;
+const { SOURCE_SPACE_ID, TARGET_SPACE_ID } = process.env;
 
-// const file = "/path_to/your_file.jpg";
-export async function uploadFile(
-  targetClient,
-  fileOptions,
-  sourceFilename,
-  success,
-  fail
-) {
+export async function uploadFile(targetClient, fileOptions, sourceFilename) {
   const uploadRes = await targetClient.post(
     `/spaces/${TARGET_SPACE_ID}/assets/`,
     fileOptions
