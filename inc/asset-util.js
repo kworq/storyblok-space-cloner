@@ -65,8 +65,8 @@ export async function copyAssets(
   unique_assets = new Map()
 ) {
   const f_response = await copyAssetFolders(sourceClient, targetClient);
-  //console.log(f_response);
-  //return;
+  // console.log(f_response);
+  // return;
   const per_page = 1;
   const a_response = await sourceClient.get(
     `/spaces/${SOURCE_SPACE_ID}/assets/`,
@@ -115,9 +115,9 @@ export async function copyAssets(
   try {
     const a_response = await Promise.all(uploadPromises);
     console.log(a_response);
-    for (const [sourceFilename, targetAsset] of a_response) {
-      unique_assets.set(sourceFilename, targetAsset);
-    }
+    // for (const [sourceFilename, targetAsset] of a_response) {
+    //   unique_assets.set(sourceFilename, targetAsset);
+    // }
   } catch (error) {
     console.error("Error:", error);
   }
@@ -176,7 +176,12 @@ export async function copyAssetFolders(sourceClient, targetClient) {
 
   const unique_folders = new Map();
   for (const folder of asset_folders) {
-    const f = targetAssetFolders.find((f) => f.name === folder.name);
+    // TODO: Delete folder if it is orphaned. Maybe.
+    const f = targetAssetFolders.find(
+      (f) =>
+        f.name === folder.name &&
+        f.parent_id === unique_parent_folders.get(folder.parent_id).target_id
+    );
     if (f) {
       unique_folders.set(folder.id, {
         ...folder,
