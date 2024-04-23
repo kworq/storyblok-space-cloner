@@ -1,6 +1,7 @@
 import "dotenv/config";
 import StoryblokClient from "storyblok-js-client";
 import { copyAssets } from "./inc/asset-util.js";
+import { copyComponents } from "./inc/component-util.js";
 
 const {
   SOURCE_OAUTH_TOKEN,
@@ -29,4 +30,6 @@ const TargetStoryblok = new StoryblokClient(
   ENDPOINT
 );
 
-await copyAssets(SourceStoryblok, TargetStoryblok);
+const a_response = await copyAssets(SourceStoryblok, TargetStoryblok);
+console.log(a_response);
+//await copyComponents(SourceStoryblok, TargetStoryblok);
