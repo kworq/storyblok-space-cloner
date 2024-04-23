@@ -52,7 +52,8 @@ export async function copyAssets(
   const f_response = await copyAssetFolders(sourceClient, targetClient);
   // console.log(f_response);
   // return;
-  const per_page = 1;
+  const pageLimit = 2;
+  const per_page = 5;
   const a_response = await sourceClient.get(
     `/spaces/${SOURCE_SPACE_ID}/assets/`,
     {
@@ -100,15 +101,22 @@ export async function copyAssets(
   try {
     const a_response = await Promise.all(uploadPromises);
     console.log(a_response);
-    // for (const [sourceFilename, targetAsset] of a_response) {
-    //   unique_assets.set(sourceFilename, targetAsset);
-    // }
+    for (const [sourceFilename, targetAsset] of a_response) {
+      unique_assets.set(sourceFilename, targetAsset);
+    }
   } catch (error) {
     console.error("Error:", error);
   }
-  if (total > page * per_page) {
+  if (total > page * per_page && page <= pageLimit) {
     console.log("Copying more assets...");
-    await copyAssets(sourceClient, targetClient, page + 1, unique_assets);
+    return await copyAssets(
+      sourceClient,
+      targetClient,
+      page + 1,
+      unique_assets
+    );
+  } else {
+    return { upload: "success", count: unique_assets.size, from_total: total };
   }
 }
 
