@@ -6,6 +6,7 @@
   "main": "index.js",
   "dependencies": {
     "@dotenvx/dotenvx": "^0.35.1",
+    "form-data": "^4.0.0",
     "storyblok-js-client": "^6.7.3"
   },
   "scripts": {
