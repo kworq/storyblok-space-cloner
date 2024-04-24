@@ -24,7 +24,8 @@ export async function copyComponents(sourceClient, targetClient) {
   targetComponents?.forEach((component) => {
     target_components.set(component.name, component);
   });
-  let count = 0;
+  let create_count = 0;
+  let update_count = 0;
   for await (const [key, _component] of source_components) {
     const { name, display_name, schema, image, is_root, is_nestable } =
       _component;
@@ -47,7 +48,7 @@ export async function copyComponents(sourceClient, targetClient) {
         console.log(
           `Status: ${res.status} Updated component id: ${id} name: ${name}`
         );
-        count++;
+        update_count++;
       } catch (e) {
         console.error(e);
       }
@@ -60,7 +61,7 @@ export async function copyComponents(sourceClient, targetClient) {
         console.log(
           `Status: ${res.status} Created component id: ${id} name: ${name}`
         );
-        count++;
+        create_count++;
       } catch (e) {
         console.error(e);
       }
@@ -69,7 +70,8 @@ export async function copyComponents(sourceClient, targetClient) {
 
   return {
     clone_type: "components",
-    count: count,
+    created: create_count,
+    updated: update_count,
     from_total: sourceComponents.length,
   };
 }
