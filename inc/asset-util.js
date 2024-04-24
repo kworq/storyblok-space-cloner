@@ -7,27 +7,28 @@ export async function copyAssets(
   sourceClient,
   targetClient,
   page = 1,
-  unique_assets = new Map()
+  unique_assets = new Map(),
+  created_count = 0,
+  skipped_count = 0
 ) {
   const f_response = await copyAssetFolders(sourceClient, targetClient);
   // console.log(f_response);
   // return;
   const pageLimit = 2;
   const per_page = 5;
-  const a_response = await sourceClient.get(
+  const s_response = await sourceClient.get(
     `/spaces/${SOURCE_SPACE_ID}/assets/`,
     {
       per_page,
       page,
     }
   );
-  const total = a_response.total;
-  const sourceAssets = a_response.data.assets ?? [a_response.data];
+  const total = s_response.total;
+  const sourceAssets = s_response.data.assets ?? [s_response.data];
 
   // console.log(sourceAssets);
   // return;
   const uploadPromises = [];
-  let count = 0;
   for await (const asset of sourceAssets) {
     const sourceFilename = asset.filename;
     const alt = asset.alt;
@@ -41,7 +42,21 @@ export async function copyAssets(
     const copyright = asset.copyright;
     const source = asset.source;
 
+    //return;
     //console.log(asset);
+    const t_response = await targetClient.get(
+      `/spaces/${TARGET_SPACE_ID}/assets/`,
+      {
+        search: `/${filename}`,
+      }
+    );
+    if (t_response.data.assets.length) {
+      console.log(
+        `Status: ${200} Skipped asset filename: ${filename} already exists`
+      );
+      skipped_count++;
+      continue;
+    }
     uploadPromises.push(
       uploadFile(
         targetClient,
@@ -63,7 +78,7 @@ export async function copyAssets(
   try {
     const a_response = await Promise.all(uploadPromises);
     //console.log(a_response);
-    count += a_response.length;
+    created_count += a_response.length;
     for (const [sourceFilename, targetAsset] of a_response) {
       unique_assets.set(sourceFilename, targetAsset);
     }
@@ -76,12 +91,15 @@ export async function copyAssets(
       sourceClient,
       targetClient,
       page + 1,
-      unique_assets
+      unique_assets,
+      created_count,
+      skipped_count
     );
   } else {
     return {
       clone_type: "assets",
-      count: count,
+      created_count,
+      skipped_count,
       from_total: total,
     };
   }
@@ -107,7 +125,12 @@ export async function uploadFile(targetClient, sourceFilename, fileOptions) {
         const response = await targetClient.get(
           `spaces/${TARGET_SPACE_ID}/assets/${signed_response_object.id}/finish_upload`
         );
-
+        //console.log(response);
+        console.log(
+          `Status: ${200} Created asset id: ${response.data.id} filename: ${
+            response.data.filename
+          }`
+        );
         resolve([sourceFilename, response.data]);
       } catch (error) {
         reject(error);
