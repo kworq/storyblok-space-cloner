@@ -3,7 +3,91 @@ import FormData from "form-data";
 
 const { SOURCE_SPACE_ID, TARGET_SPACE_ID } = process.env;
 
-export async function uploadFile(targetClient, fileOptions, sourceFilename) {
+export async function copyAssets(
+  sourceClient,
+  targetClient,
+  page = 1,
+  unique_assets = new Map()
+) {
+  const f_response = await copyAssetFolders(sourceClient, targetClient);
+  // console.log(f_response);
+  // return;
+  const pageLimit = 2;
+  const per_page = 5;
+  const a_response = await sourceClient.get(
+    `/spaces/${SOURCE_SPACE_ID}/assets/`,
+    {
+      per_page,
+      page,
+    }
+  );
+  const total = a_response.total;
+  const sourceAssets = a_response.data.assets ?? [a_response.data];
+
+  // console.log(sourceAssets);
+  // return;
+  const uploadPromises = [];
+  let count = 0;
+  for await (const asset of sourceAssets) {
+    const sourceFilename = asset.filename;
+    const alt = asset.alt;
+    const title = asset.title;
+    const fileParts = sourceFilename.split("/");
+    const filename = fileParts[fileParts.length - 1];
+    const size = fileParts[fileParts.length - 3];
+    const asset_folder_id =
+      f_response?.get(asset.asset_folder_id)?.target_id ?? 0;
+    const is_private = asset.is_private;
+    const copyright = asset.copyright;
+    const source = asset.source;
+
+    //console.log(asset);
+    uploadPromises.push(
+      uploadFile(
+        targetClient,
+
+        sourceFilename,
+        {
+          filename,
+          size,
+          alt,
+          title,
+          asset_folder_id,
+          is_private,
+          copyright,
+          source,
+        }
+      )
+    );
+  }
+  try {
+    const a_response = await Promise.all(uploadPromises);
+    //console.log(a_response);
+    count += a_response.length;
+    for (const [sourceFilename, targetAsset] of a_response) {
+      unique_assets.set(sourceFilename, targetAsset);
+    }
+  } catch (error) {
+    console.error("Error:", error);
+  }
+  if (total > page * per_page && page <= pageLimit) {
+    console.log("Copying more assets...");
+    return await copyAssets(
+      sourceClient,
+      targetClient,
+      page + 1,
+      unique_assets
+    );
+  } else {
+    return {
+      clone_type: "assets",
+      count: count,
+      from_total: total,
+    };
+  }
+}
+
+export async function uploadFile(targetClient, sourceFilename, fileOptions) {
   const uploadRes = await targetClient.post(
     `/spaces/${TARGET_SPACE_ID}/assets/`,
     fileOptions
@@ -40,83 +124,6 @@ export async function fetchAssetBuffer(url) {
     return Buffer.from(buffer);
   } catch (error) {
     console.error("Error:", error);
-  }
-}
-
-export async function copyAssets(
-  sourceClient,
-  targetClient,
-  page = 1,
-  unique_assets = new Map()
-) {
-  const f_response = await copyAssetFolders(sourceClient, targetClient);
-  // console.log(f_response);
-  // return;
-  const pageLimit = 2;
-  const per_page = 5;
-  const a_response = await sourceClient.get(
-    `/spaces/${SOURCE_SPACE_ID}/assets/`,
-    {
-      per_page,
-      page,
-    }
-  );
-  const total = a_response.total;
-  const sourceAssets = a_response.data.assets ?? [a_response.data];
-
-  // console.log(sourceAssets);
-  // return;
-  const uploadPromises = [];
-  for await (const asset of sourceAssets) {
-    const sourceFilename = asset.filename;
-    const alt = asset.alt;
-    const title = asset.title;
-    const fileParts = sourceFilename.split("/");
-    const filename = fileParts[fileParts.length - 1];
-    const size = fileParts[fileParts.length - 3];
-    const asset_folder_id =
-      f_response?.get(asset.asset_folder_id)?.target_id ?? 0;
-    const is_private = asset.is_private;
-    const copyright = asset.copyright;
-    const source = asset.source;
-
-    //console.log(asset);
-    uploadPromises.push(
-      uploadFile(
-        targetClient,
-        {
-          filename,
-          size,
-          alt,
-          title,
-          asset_folder_id,
-          is_private,
-          copyright,
-          source,
-        },
-        sourceFilename
-      )
-    );
-  }
-  try {
-    const a_response = await Promise.all(uploadPromises);
-    console.log(a_response);
-    for (const [sourceFilename, targetAsset] of a_response) {
-      unique_assets.set(sourceFilename, targetAsset);
-    }
-  } catch (error) {
-    console.error("Error:", error);
-  }
-  if (total > page * per_page && page <= pageLimit) {
-    console.log("Copying more assets...");
-    return await copyAssets(
-      sourceClient,
-      targetClient,
-      page + 1,
-      unique_assets
-    );
-  } else {
-    return { upload: "success", count: unique_assets.size, from_total: total };
   }
 }
 
