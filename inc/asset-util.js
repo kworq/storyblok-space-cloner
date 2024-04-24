@@ -6,10 +6,10 @@ const { SOURCE_SPACE_ID, TARGET_SPACE_ID } = process.env;
 export async function copyAssets(
   sourceClient,
   targetClient,
-  page = 1,
-  unique_assets = new Map(),
   created_count = 0,
-  skipped_count = 0
+  skipped_count = 0,
+  page = 1,
+  unique_assets = new Map()
 ) {
   const f_response = await copyAssetFolders(sourceClient, targetClient);
   // console.log(f_response);
@@ -90,10 +90,10 @@ export async function copyAssets(
     return await copyAssets(
       sourceClient,
       targetClient,
-      page + 1,
-      unique_assets,
       created_count,
-      skipped_count
+      skipped_count,
+      page + 1,
+      unique_assets
     );
   } else {
     return {

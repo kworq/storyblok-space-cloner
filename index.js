@@ -2,15 +2,9 @@ import "dotenv/config";
 import StoryblokClient from "storyblok-js-client";
 import { copyAssets } from "./inc/asset-util.js";
 import { copyComponents } from "./inc/component-util.js";
+import { copyStories } from "./inc/story-util.js";
 
-const {
-  SOURCE_OAUTH_TOKEN,
-  SOURCE_PUBLIC_ACCESS_TOKEN,
-  SOURCE_SPACE_ID,
-  TARGET_OAUTH_TOKEN,
-  TARGET_PUBLIC_ACCESS_TOKEN,
-  TARGET_SPACE_ID,
-} = process.env;
+const { SOURCE_OAUTH_TOKEN, TARGET_OAUTH_TOKEN } = process.env;
 
 const ENDPOINT = "https://api-us.storyblok.com/v1";
 
@@ -30,6 +24,15 @@ const TargetStoryblok = new StoryblokClient(
   ENDPOINT
 );
 
-const a_response = await copyAssets(SourceStoryblok, TargetStoryblok);
-console.log(a_response);
-//await copyComponents(SourceStoryblok, TargetStoryblok);
+const ac_response = await Promise.all([
+  //   copyComponents(SourceStoryblok, TargetStoryblok),
+  //   copyAssets(SourceStoryblok, TargetStoryblok),
+]);
+
+console.log(ac_response);
+
+const st_response = await Promise.all([
+  copyStories(SourceStoryblok, TargetStoryblok),
+]);
+
+console.log(st_response);

@@ -2,7 +2,15 @@ import "dotenv/config";
 
 const { SOURCE_SPACE_ID, TARGET_SPACE_ID } = process.env;
 
-export async function copyComponents(sourceClient, targetClient) {
+const pageLimit = 2;
+const per_page = 5;
+
+export async function copyComponents(
+  sourceClient,
+  targetClient,
+  create_count = 0,
+  update_count = 0
+) {
   const s_response = await sourceClient.get(
     `/spaces/${SOURCE_SPACE_ID}/components/`,
     {}
@@ -24,8 +32,6 @@ export async function copyComponents(sourceClient, targetClient) {
   targetComponents?.forEach((component) => {
     target_components.set(component.name, component);
   });
-  let create_count = 0;
-  let update_count = 0;
   for await (const [key, _component] of source_components) {
     const { name, display_name, schema, image, is_root, is_nestable } =
       _component;
