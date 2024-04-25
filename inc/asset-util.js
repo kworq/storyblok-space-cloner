@@ -14,8 +14,8 @@ export async function copyAssets(
   const f_response = await copyAssetFolders(sourceClient, targetClient);
   // console.log(f_response);
   // return;
-  const pageLimit = 2;
-  const per_page = 5;
+  const pageLimit = 100;
+  const per_page = 25;
   const s_response = await sourceClient.get(
     `/spaces/${SOURCE_SPACE_ID}/assets/`,
     {
