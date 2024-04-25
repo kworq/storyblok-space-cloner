@@ -82,38 +82,20 @@ export async function copyStories(
 export async function copyStoryFolders(
   sourceClient,
   targetClient,
-  source_story_folders = new Map(),
-  sourceStoryFolders = [],
-  page = 1
+  created_count = 0,
+  updated_count = 0,
+  failed_count = 0,
+  source_story_folders = new Map()
 ) {
-  console.log("copyStoryFolders page:", page);
-  const pageLimit = 100;
-  const per_page = 2;
-  const s_response = await sourceClient.get(
-    `/spaces/${SOURCE_SPACE_ID}/stories/`,
-    {
-      per_page,
-      page,
-      folder_only: true,
-    }
+  const sourceStoryFolders = await getStoryFolders(
+    sourceClient,
+    SOURCE_SPACE_ID
   );
 
-  sourceStoryFolders = [
-    ...sourceStoryFolders,
-    ...(s_response.data?.stories ?? [s_response.data?.story]),
-  ];
-
-  const total = s_response.total;
-
-  if (total > page * per_page && page <= pageLimit) {
-    return await copyStoryFolders(
-      sourceClient,
-      targetClient,
-      source_story_folders,
-      sourceStoryFolders,
-      ++page
-    );
-  }
+  const targetStoryFolders = await getStoryFolders(
+    targetClient,
+    TARGET_SPACE_ID
+  );
 
   // Create Top Most Story Folders
   for await (const sf of sourceStoryFolders) {
@@ -129,123 +111,74 @@ export async function copyStoryFolders(
       disable_fe_editor: sf.disable_fe_editor,
       // TODO: group_id
     };
-    if (!sf.parent_id) {
+
+    const tf = targetStoryFolders.find((f) => f.name === sf.name);
+    if (tf) {
+      sf.target_id = tf.id;
       try {
-        const t_response = await targetClient.post(
-          `/spaces/${TARGET_SPACE_ID}/stories/`,
+        const t_response = await targetClient.put(
+          `/spaces/${TARGET_SPACE_ID}/stories/${tf.id}/`,
           {
-            story,
+            story: {
+              ...story,
+              id: tf.id,
+            },
           }
         );
         sf.target_id = t_response.data.story.id;
+        updated_count++;
       } catch (e) {
         console.error(e);
+      }
+    } else {
+      if (!sf.parent_id) {
+        try {
+          const t_response = await targetClient.post(
+            `/spaces/${TARGET_SPACE_ID}/stories/`,
+            {
+              story,
+            }
+          );
+          sf.target_id = t_response.data.story.id;
+          created_count++;
+        } catch (e) {
+          console.error(e);
+        }
       }
     }
     source_story_folders.set(sf.id, sf);
   }
-  console.log("source_story_folders", source_story_folders);
-  source_story_folders = await getStoryFolders(
+
+  const stories = await createStoryFolders(
     sourceClient,
     targetClient,
-    source_story_folders
+    source_story_folders,
+    created_count,
+    updated_count,
+    failed_count
   );
 
   return {
     clone_type: "story_folders",
-    from_total: source_story_folders.size,
+    created_count: stories.created_count,
+    updated_count: stories.updated_count,
+    failed_count: stories.failed_count,
+    from_total: stories.source_story_folders.size,
   };
-
-  const t_response = await targetClient.get(
-    `/spaces/${TARGET_SPACE_ID}/asset_folders/`,
-    {}
-  );
-  const targetAssetFolders = t_response.data.asset_folders;
-
-  const unique_parent_folders = new Map();
-  for (const folder of asset_parent_folders) {
-    const f = targetAssetFolders.find((f) => f.name === folder.name);
-    if (f) {
-      unique_parent_folders.set(folder.id, {
-        ...folder,
-        target_id: f.id,
-      });
-    } else {
-      unique_parent_folders.set(folder.id, folder);
-    }
-  }
-  for await (const [key, folder] of unique_parent_folders) {
-    if (folder.target_id) continue;
-    const res = await targetClient.post(
-      `/spaces/${TARGET_SPACE_ID}/asset_folders/`,
-      {
-        asset_folder: {
-          name: folder.name,
-          parent_id: folder.parent_id,
-        },
-      }
-    );
-    unique_parent_folders.set(folder.id, {
-      ...folder,
-      target_id: res.data.asset_folder.id,
-    });
-  }
-
-  const unique_folders = new Map();
-  for (const folder of asset_folders) {
-    // TODO: Delete folder if it is orphaned. Maybe.
-    const f = targetAssetFolders.find(
-      (f) =>
-        f.name === folder.name &&
-        f.parent_id === unique_parent_folders.get(folder.parent_id).target_id
-    );
-    if (f) {
-      unique_folders.set(folder.id, {
-        ...folder,
-        target_id: f.id,
-        target_parent_id: f.parent_id,
-      });
-    } else {
-      unique_folders.set(folder.id, folder);
-    }
-  }
-
-  for await (const [key, folder] of unique_folders) {
-    if (folder.target_id) continue;
-    const res = await targetClient.post(
-      `/spaces/${TARGET_SPACE_ID}/asset_folders/`,
-      {
-        asset_folder: {
-          name: folder.name,
-          parent_id: unique_parent_folders.get(folder.parent_id).target_id,
-        },
-      }
-    );
-    unique_folders.set(folder.id, {
-      ...folder,
-      target_id: res.data.asset_folder.id,
-      target_parent_id: res.data.asset_folder.parent_id,
-    });
-  }
-
-  for (const [key, folder] of unique_parent_folders) {
-    unique_folders.set(key, folder);
-  }
-  return unique_folders;
 }
 
-export async function getStoryFolders(
+export async function createStoryFolders(
   sourceClient,
   targetClient,
   source_story_folders,
+  created_count,
+  updated_count,
+  failed_count,
   skipped_story_folder_ids = new Set(),
-  failed_count = 0,
   page = 1
 ) {
   const max_skips = 10;
   for await (const [key, sf] of source_story_folders) {
-    // console.log("parent_id", sf.parent_id === 0);
-    // return;
     if (!sf.parent_id) continue;
     const target_parent_id = source_story_folders.get(sf.parent_id)?.target_id;
     if (!target_parent_id) {
@@ -263,45 +196,77 @@ export async function getStoryFolders(
       skipped_story_folder_ids.add(sf.id);
       console.log("SKIPPED", sf.id, sf.name, skipped_count);
       continue;
-    }
-    const story = {
-      name: sf.name,
-      slug: sf.slug,
-      path: sf.path,
-      content: sf.content,
-      position: sf.position,
-      is_startpage: sf.is_startpage,
-      is_folder: sf.is_folder,
-      default_root: sf.default_root,
-      disable_fe_editor: sf.disable_fe_editor,
-      parent_id: target_parent_id,
-      // TODO: group_id
-    };
-    const t_response = await targetClient.post(
-      `/spaces/${TARGET_SPACE_ID}/stories/`,
-      {
-        story: {
-          ...story,
-          parent_id: target_parent_id,
-        },
+    } else if (!source_story_folders.get(sf.id)?.target_id) {
+      const story = {
+        name: sf.name,
+        slug: sf.slug,
+        path: sf.path,
+        content: sf.content,
+        position: sf.position,
+        is_startpage: sf.is_startpage,
+        is_folder: sf.is_folder,
+        default_root: sf.default_root,
+        disable_fe_editor: sf.disable_fe_editor,
+        parent_id: target_parent_id,
+        // TODO: group_id
+      };
+      const t_response = await targetClient.post(
+        `/spaces/${TARGET_SPACE_ID}/stories/`,
+        {
+          story: {
+            ...story,
+            parent_id: target_parent_id,
+          },
+        }
+      );
+      sf.target_id = t_response.data.story.id;
+      source_story_folders.set(sf.id, sf);
+      created_count++;
+      if (skipped_story_folder_ids.has(sf.id)) {
+        skipped_story_folder_ids.delete(sf.id);
       }
-    );
-    sf.target_id = t_response.data.story.id;
-    source_story_folders.set(sf.id, sf);
-    if (skipped_story_folder_ids.has(sf.id)) {
-      skipped_story_folder_ids.delete(sf.id);
     }
   }
-  //   if (skipped_story_folder_ids.size > 0) {
-  //     return await getStoryFolders(
-  //       sourceClient,
-  //       targetClient,
-  //       source_story_folders,
-  //       skipped_story_folder_ids,
-  //       failed_count,
-  //       ++page
-  //     );
-  //   } else {
-  return source_story_folders;
-  //}
+  if (skipped_story_folder_ids.size > 0) {
+    return await createStoryFolders(
+      sourceClient,
+      targetClient,
+      source_story_folders,
+      created_count,
+      updated_count,
+      failed_count,
+      skipped_story_folder_ids,
+      ++page
+    );
+  } else {
+    return { source_story_folders, created_count, updated_count, failed_count };
+  }
+}
+
+export async function getStoryFolders(
+  client,
+  SPACE_ID,
+  storyFolders = [],
+  page = 1
+) {
+  console.log("copyStoryFolders page:", page);
+  const pageLimit = 100;
+  const per_page = 2;
+  const response = await client.get(`/spaces/${SPACE_ID}/stories/`, {
+    per_page,
+    page,
+    folder_only: true,
+  });
+
+  storyFolders = [
+    ...storyFolders,
+    ...(response.data?.stories ?? [response.data?.story]),
+  ];
+
+  const total = response.total;
+
+  if (total > page * per_page && page <= pageLimit) {
+    return await getStoryFolders(client, SPACE_ID, storyFolders, ++page);
+  }
+  return storyFolders;
 }
