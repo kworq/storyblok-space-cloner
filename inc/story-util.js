@@ -1,91 +1,122 @@
 import "dotenv/config";
-import { get } from "http";
-import { start } from "repl";
 
 const { SOURCE_SPACE_ID, TARGET_SPACE_ID } = process.env;
 
 export async function copyStories(
   sourceClient,
   targetClient,
+  source_story_folders = new Map(),
   created_count = 0,
   updated_count = 0,
   page = 1
 ) {
-  const f_response = await copyStoryFolders(sourceClient, targetClient);
-  console.log(f_response);
-  return;
-  const pageLimit = 2;
-  const per_page = 5;
+  const f_response =
+    page === 1
+      ? await copyStoryFolders(sourceClient, targetClient, source_story_folders)
+      : { source_story_folders };
+  ({ source_story_folders } = f_response);
+  if (f_response.from_total !== undefined) {
+    delete f_response.source_story_folders;
+    console.log(f_response);
+  }
+  const pageLimit = 100;
+  const per_page = 25;
   const s_response = await sourceClient.get(
     `/spaces/${SOURCE_SPACE_ID}/stories/`,
     {
       per_page,
       page,
-      //starts_with: "home",
     }
   );
+  const total = s_response.total;
   const source_stories = new Map();
   const sourceStories = s_response.data?.stories ?? [s_response.data.story];
 
   for await (const s of sourceStories) {
     const s_response = await sourceClient.get(
       `/spaces/${SOURCE_SPACE_ID}/stories/${s.id}/`,
-      {}
+      {
+        story_only: true,
+      }
     );
-    source_stories.set(s.full_slug, s_response?.data?.story);
-    console.log("SOURCE STORY", s_response.data.story);
-    const {
-      name,
-      slug,
-      path,
-      content,
-      position,
-      is_startpage,
-      is_folder,
-      default_root,
-      disable_fe_editor,
-      //   parent_id,
-      //   group_id,
-      first_published_at,
-    } = s_response.data.story;
-    const story = {
-      name,
-      slug,
-      path,
-      content,
-      position,
-      is_startpage,
-      is_folder,
-      default_root,
-      disable_fe_editor,
-      //   parent_id,
-      //   group_id,
-      first_published_at,
-    };
+    source_stories.set(s.id, s_response?.data?.story);
+    //console.log("SOURCE STORY", s_response.data.story.full_slug);
 
-    const t_response = await targetClient.post(
+    const t_existing_response = await targetClient.get(
       `/spaces/${TARGET_SPACE_ID}/stories/`,
-      { story }
+      {
+        starts_with: s_response?.data?.story.full_slug,
+      }
     );
-    console.log("TARGET STORY", t_response);
-    // source_stories.set(story.full_slug, t_response.data.story);
+    const target_story_id = t_existing_response?.data?.stories?.[0]?.id;
+
+    const s_story = s_response.data.story;
+
+    const story = {
+      name: s_story.name,
+      slug: s_story.slug,
+      path: s_story.path,
+      content: s_story.content,
+      position: s_story.position,
+      is_startpage: s_story.is_startpage,
+      is_folder: s_story.is_folder,
+      default_root: s_story.default_root,
+      disable_fe_editor: s_story.disable_fe_editor,
+      parent_id:
+        source_story_folders?.get(s_story.parent_id)?.target_id ?? null,
+      // group_id,
+      first_published_at: s_story.first_published_at,
+    };
+    let t_response;
+    try {
+      if (!target_story_id) {
+        t_response = await targetClient.post(
+          `/spaces/${TARGET_SPACE_ID}/stories/`,
+          { story }
+        );
+        created_count++;
+        console.log("Created Story", t_response.data.story.full_slug);
+      } else {
+        t_response = await targetClient.put(
+          `/spaces/${TARGET_SPACE_ID}/stories/${target_story_id}/`,
+          { story: { ...story, id: target_story_id } }
+        );
+        updated_count++;
+        console.log("Updated Story", t_response.data.story.full_slug);
+      }
+
+      source_stories.set(story.full_slug, t_response.data.story);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  if (total > page * per_page && page <= pageLimit) {
+    return await copyStories(
+      sourceClient,
+      targetClient,
+      source_story_folders,
+      created_count,
+      updated_count,
+      ++page
+    );
   }
 
   return {
     clone_type: "stories",
-    created: created_count,
-    updated: updated_count,
-    from_total: sourceStories.length,
+    created_count,
+    updated_count,
+    from_total: total,
   };
 }
 
 export async function copyStoryFolders(
   sourceClient,
   targetClient,
+  source_story_folders,
   created_count = 0,
   updated_count = 0,
-  failed_count = 0,
-  source_story_folders = new Map()
+  failed_count = 0
 ) {
   const sourceStoryFolders = await getStoryFolders(
     sourceClient,
@@ -164,6 +195,7 @@ export async function copyStoryFolders(
     updated_count: stories.updated_count,
     failed_count: stories.failed_count,
     from_total: stories.source_story_folders.size,
+    source_story_folders: stories.source_story_folders,
   };
 }
 
@@ -249,9 +281,9 @@ export async function getStoryFolders(
   storyFolders = [],
   page = 1
 ) {
-  console.log("copyStoryFolders page:", page);
+  //console.log("copyStoryFolders page:", page);
   const pageLimit = 100;
-  const per_page = 2;
+  const per_page = 25;
   const response = await client.get(`/spaces/${SPACE_ID}/stories/`, {
     per_page,
     page,
