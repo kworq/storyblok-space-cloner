@@ -8,8 +8,8 @@ const per_page = 5;
 export async function copyComponents(
   sourceClient,
   targetClient,
-  create_count = 0,
-  update_count = 0
+  created_count = 0,
+  updated_count = 0
 ) {
   const s_response = await sourceClient.get(
     `/spaces/${SOURCE_SPACE_ID}/components/`,
@@ -54,7 +54,7 @@ export async function copyComponents(
         console.log(
           `Status: ${res.status} Updated component id: ${id} name: ${name}`
         );
-        update_count++;
+        updated_count++;
       } catch (e) {
         console.error(e);
       }
@@ -67,7 +67,7 @@ export async function copyComponents(
         console.log(
           `Status: ${res.status} Created component id: ${id} name: ${name}`
         );
-        create_count++;
+        created_count++;
       } catch (e) {
         console.error(e);
       }
@@ -76,8 +76,8 @@ export async function copyComponents(
 
   return {
     clone_type: "components",
-    created: create_count,
-    updated: update_count,
+    created: created_count,
+    updated: updated_count,
     from_total: sourceComponents.length,
   };
 }
