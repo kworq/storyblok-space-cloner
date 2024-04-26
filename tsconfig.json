@@ -4,6 +4,9 @@
 
   // Most ts-node options can be specified here using their programmatic names.
   "ts-node": {
+    // To deal with lack of .ts extensions in imports
+    "esm": true,
+    "experimentalSpecifierResolution": "node",
     // It is faster to skip typechecking.
     // Remove if you want ts-node to do typechecking.
     "transpileOnly": true,
