@@ -1,5 +1,6 @@
 import "dotenv/config";
 import type StoryblokClient from "storyblok-js-client";
+import { findValuesByKey, updateValues } from "../utils/objectReplace";
 
 const { SOURCE_SPACE_ID, TARGET_SPACE_ID } = process.env;
 
@@ -42,7 +43,26 @@ export async function copyStories(
       }
     );
     source_stories.set(s.id, s_response?.data?.story);
-    //console.log("SOURCE STORY", s_response.data.story.full_slug);
+    const filenames = findValuesByKey(
+      s_response?.data?.story?.content,
+      "filename"
+    );
+    if (filenames.length > 0) {
+      for await (const { ref, key } of filenames) {
+        await updateValues(ref, key, async (value: string) => {
+          const filename = value.split("/").pop();
+          const t_response = await targetClient.get(
+            `/spaces/${TARGET_SPACE_ID}/assets/`,
+            {
+              search: `${filename}`,
+            }
+          );
+          console.log("Filename replaced: ", filename);
+          const t_asset = t_response.data.assets[0];
+          return t_asset.filename;
+        });
+      }
+    }
 
     const t_existing_response = await targetClient.get(
       `/spaces/${TARGET_SPACE_ID}/stories/`,
@@ -50,10 +70,7 @@ export async function copyStories(
         starts_with: s_response?.data?.story.full_slug,
       }
     );
-    const target_story_id = t_existing_response?.data?.stories?.[0]?.id;
-
     const s_story = s_response.data.story;
-
     const story = {
       name: s_story.name,
       slug: s_story.slug,
@@ -70,6 +87,7 @@ export async function copyStories(
       first_published_at: s_story.first_published_at,
     };
     let t_response;
+    const target_story_id = t_existing_response?.data?.stories?.[0]?.id;
     try {
       if (!target_story_id) {
         t_response = await targetClient.post(
