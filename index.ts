@@ -1,8 +1,8 @@
 import "dotenv/config";
 import StoryblokClient from "storyblok-js-client";
-import { copyAssets } from "./inc/asset-util.js";
-import { copyComponents } from "./inc/component-util.js";
-import { copyStories } from "./inc/story-util.js";
+import { copyAssets } from "./inc/asset-util";
+import { copyComponents } from "./inc/component-util";
+import { copyStories } from "./inc/story-util";
 
 const { SOURCE_OAUTH_TOKEN, TARGET_OAUTH_TOKEN } = process.env;
 
