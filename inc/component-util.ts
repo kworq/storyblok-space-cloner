@@ -1,4 +1,5 @@
 import "dotenv/config";
+import type StoryblokClient from "storyblok-js-client";
 
 const { SOURCE_SPACE_ID, TARGET_SPACE_ID } = process.env;
 
@@ -6,8 +7,8 @@ const pageLimit = 2;
 const per_page = 5;
 
 export async function copyComponents(
-  sourceClient,
-  targetClient,
+  sourceClient: StoryblokClient,
+  targetClient: StoryblokClient,
   created_count = 0,
   updated_count = 0
 ) {
@@ -19,7 +20,7 @@ export async function copyComponents(
   const sourceComponents = s_response.data?.components ?? [s_response.data];
   // console.log(sourceComponents);
   // return;
-  sourceComponents?.forEach((component) => {
+  sourceComponents?.forEach((component: typeof sourceComponents) => {
     source_components.set(component.name, component);
   });
 
@@ -29,7 +30,7 @@ export async function copyComponents(
   );
   const target_components = new Map();
   const targetComponents = t_response.data.components ?? [t_response.data];
-  targetComponents?.forEach((component) => {
+  targetComponents?.forEach((component: typeof targetComponents) => {
     target_components.set(component.name, component);
   });
   for await (const [key, _component] of source_components) {

@@ -1,21 +1,23 @@
 import "dotenv/config";
+import type StoryblokClient from "storyblok-js-client";
 
 const { SOURCE_SPACE_ID, TARGET_SPACE_ID } = process.env;
 
 export async function copyStories(
-  sourceClient,
-  targetClient,
+  sourceClient: StoryblokClient,
+  targetClient: StoryblokClient,
   source_story_folders = new Map(),
   created_count = 0,
   updated_count = 0,
   page = 1
 ) {
-  const f_response =
+  const f_response = (
     page === 1
       ? await copyStoryFolders(sourceClient, targetClient, source_story_folders)
-      : { source_story_folders };
+      : { source_story_folders }
+  ) as any;
   ({ source_story_folders } = f_response);
-  if (f_response.from_total !== undefined) {
+  if ("from_total" in f_response && f_response.from_total !== undefined) {
     delete f_response.source_story_folders;
     console.log(f_response);
   }
@@ -85,7 +87,8 @@ export async function copyStories(
         console.log("Updated Story", t_response.data.story.full_slug);
       }
 
-      source_stories.set(story.full_slug, t_response.data.story);
+      if ("full_slug" in story)
+        source_stories.set(story.full_slug, t_response.data.story);
     } catch (e) {
       console.error(e);
     }
@@ -111,9 +114,9 @@ export async function copyStories(
 }
 
 export async function copyStoryFolders(
-  sourceClient,
-  targetClient,
-  source_story_folders,
+  sourceClient: StoryblokClient,
+  targetClient: StoryblokClient,
+  source_story_folders: Map<string | number, any>,
   created_count = 0,
   updated_count = 0,
   failed_count = 0
@@ -143,7 +146,9 @@ export async function copyStoryFolders(
       // TODO: group_id
     };
 
-    const tf = targetStoryFolders.find((f) => f.name === sf.name);
+    const tf = targetStoryFolders.find(
+      (f: typeof targetStoryFolders) => f.name === sf.name
+    );
     if (tf) {
       sf.target_id = tf.id;
       try {
@@ -200,12 +205,12 @@ export async function copyStoryFolders(
 }
 
 export async function createStoryFolders(
-  sourceClient,
-  targetClient,
-  source_story_folders,
-  created_count,
-  updated_count,
-  failed_count,
+  sourceClient: StoryblokClient,
+  targetClient: StoryblokClient,
+  source_story_folders: Map<string | number, any>,
+  created_count: number,
+  updated_count: number,
+  failed_count: number,
   skipped_story_folder_ids = new Set(),
   page = 1
 ) {
@@ -276,9 +281,9 @@ export async function createStoryFolders(
 }
 
 export async function getStoryFolders(
-  client,
-  SPACE_ID,
-  storyFolders = [],
+  client: StoryblokClient,
+  SPACE_ID: string,
+  storyFolders: any = [],
   page = 1
 ) {
   //console.log("copyStoryFolders page:", page);

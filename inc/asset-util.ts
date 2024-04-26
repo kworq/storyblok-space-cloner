@@ -1,11 +1,12 @@
 import "dotenv/config";
 import FormData from "form-data";
+import type StoryblokClient from "storyblok-js-client";
 
 const { SOURCE_SPACE_ID, TARGET_SPACE_ID } = process.env;
 
 export async function copyAssets(
-  sourceClient,
-  targetClient,
+  sourceClient: StoryblokClient,
+  targetClient: StoryblokClient,
   created_count = 0,
   skipped_count = 0,
   page = 1,
@@ -58,21 +59,16 @@ export async function copyAssets(
       continue;
     }
     uploadPromises.push(
-      uploadFile(
-        targetClient,
-
-        sourceFilename,
-        {
-          filename,
-          size,
-          alt,
-          title,
-          asset_folder_id,
-          is_private,
-          copyright,
-          source,
-        }
-      )
+      uploadFile(targetClient, sourceFilename, {
+        filename,
+        size,
+        alt,
+        title,
+        asset_folder_id,
+        is_private,
+        copyright,
+        source,
+      })
     );
   }
   try {
@@ -105,7 +101,11 @@ export async function copyAssets(
   }
 }
 
-export async function uploadFile(targetClient, sourceFilename, fileOptions) {
+export async function uploadFile(
+  targetClient: StoryblokClient,
+  sourceFilename: string,
+  fileOptions: Record<string, any>
+): Promise<[string, any]> {
   const uploadRes = await targetClient.post(
     `/spaces/${TARGET_SPACE_ID}/assets/`,
     fileOptions
@@ -139,7 +139,7 @@ export async function uploadFile(targetClient, sourceFilename, fileOptions) {
   });
 }
 
-export async function fetchAssetBuffer(url) {
+export async function fetchAssetBuffer(url: string) {
   try {
     const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch the file");
@@ -150,16 +150,21 @@ export async function fetchAssetBuffer(url) {
   }
 }
 
-export async function copyAssetFolders(sourceClient, targetClient) {
+export async function copyAssetFolders(
+  sourceClient: StoryblokClient,
+  targetClient: StoryblokClient
+) {
   const s_response = await sourceClient.get(
     `/spaces/${SOURCE_SPACE_ID}/asset_folders/`,
     {}
   );
-  const asset_parent_folders = s_response.data.asset_folders.filter(
-    (folder) => folder.parent_id === 0
+  const sourceAssetFolders = s_response.data.asset_folders;
+  const asset_parent_folders = sourceAssetFolders.filter(
+    (folder: typeof sourceAssetFolders) => folder.parent_id === 0
   );
-  const asset_folders = s_response.data.asset_folders.filter(
-    (folder) => folder.parent_id !== 0
+
+  const asset_folders = sourceAssetFolders.filter(
+    (folder: typeof sourceAssetFolders) => folder.parent_id !== 0
   );
 
   const t_response = await targetClient.get(
@@ -170,7 +175,9 @@ export async function copyAssetFolders(sourceClient, targetClient) {
 
   const unique_parent_folders = new Map();
   for (const folder of asset_parent_folders) {
-    const f = targetAssetFolders.find((f) => f.name === folder.name);
+    const f = targetAssetFolders.find(
+      (f: typeof targetAssetFolders) => f.name === folder.name
+    );
     if (f) {
       unique_parent_folders.set(folder.id, {
         ...folder,
@@ -201,7 +208,7 @@ export async function copyAssetFolders(sourceClient, targetClient) {
   for (const folder of asset_folders) {
     // TODO: Delete folder if it is orphaned. Maybe.
     const f = targetAssetFolders.find(
-      (f) =>
+      (f: typeof targetAssetFolders) =>
         f.name === folder.name &&
         f.parent_id === unique_parent_folders.get(folder.parent_id).target_id
     );

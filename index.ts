@@ -4,6 +4,17 @@ import { copyAssets } from "./inc/asset-util";
 import { copyComponents } from "./inc/component-util";
 import { copyStories } from "./inc/story-util";
 
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      SOURCE_OAUTH_TOKEN: string;
+      TARGET_OAUTH_TOKEN: string;
+      SOURCE_SPACE_ID: string;
+      TARGET_SPACE_ID: string;
+    }
+  }
+}
+
 const { SOURCE_OAUTH_TOKEN, TARGET_OAUTH_TOKEN } = process.env;
 
 const ENDPOINT = "https://api-us.storyblok.com/v1";
@@ -25,8 +36,8 @@ const TargetStoryblok = new StoryblokClient(
 );
 
 const ac_response = await Promise.all([
-  //   copyComponents(SourceStoryblok, TargetStoryblok),
-  //   copyAssets(SourceStoryblok, TargetStoryblok),
+  // copyComponents(SourceStoryblok, TargetStoryblok),
+  // copyAssets(SourceStoryblok, TargetStoryblok),
 ]);
 
 console.log(ac_response);
