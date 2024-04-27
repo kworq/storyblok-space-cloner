@@ -1,6 +1,6 @@
 import "dotenv/config";
 import type StoryblokClient from "storyblok-js-client";
-import { findValuesByKey, updateValues } from "../utils/objectReplace";
+import { findValuesByKey, updateValues } from "../utils/asset-ref-update";
 
 const { SOURCE_SPACE_ID, TARGET_SPACE_ID } = process.env;
 
