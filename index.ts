@@ -3,6 +3,7 @@ import StoryblokClient from "storyblok-js-client";
 import { copyAssets } from "./inc/asset-util";
 import { copyComponents } from "./inc/component-util";
 import { copyStories } from "./inc/story-util";
+import { copyRefStories } from "./inc/story-ref-util";
 
 declare global {
   namespace NodeJS {
