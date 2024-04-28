@@ -1,6 +1,7 @@
 import "dotenv/config";
 import type StoryblokClient from "storyblok-js-client";
 import { findValuesByKey, updateValues } from "../utils/asset-ref-update";
+import { start } from "repl";
 
 const { SOURCE_SPACE_ID, TARGET_SPACE_ID } = process.env;
 
@@ -51,14 +52,27 @@ export async function copyStories(
       for await (const { ref, key } of filenames) {
         await updateValues(ref, key, async (value: string) => {
           const filename = value.split("/").pop();
+          if (!filename || filename === "") {
+            return value;
+          }
           const t_response = await targetClient.get(
             `/spaces/${TARGET_SPACE_ID}/assets/`,
             {
-              search: `${filename}`,
+              search: `/${filename}`,
             }
           );
-          console.log("Filename replaced: ", filename);
-          const t_asset = t_response.data.assets[0];
+
+          const assets = t_response.data.assets;
+          const t_asset =
+            assets.find((asset: typeof assets) => {
+              return asset.filename === filename;
+            }) ?? assets[0];
+          console.log(
+            "Filename - found/replaced: ",
+            filename,
+            " / ",
+            t_asset.filename
+          );
           return t_asset.filename;
         });
       }

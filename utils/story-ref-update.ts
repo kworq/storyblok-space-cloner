@@ -43,7 +43,7 @@ export function findUUIDs(obj: Record<string, any> | string | any[] | null) {
           uuidRegex.test(item) &&
           parentKey !== "_uid"
         ) {
-          console.log("parentKey", parentKey);
+          console.log("found key[]", parentKey);
           uuids.push(item);
         } else if (typeof item === "object") {
           search(item, parentKey);
@@ -56,7 +56,7 @@ export function findUUIDs(obj: Record<string, any> | string | any[] | null) {
           uuidRegex.test(value) &&
           key !== "_uid"
         ) {
-          console.log("key", key);
+          console.log("found key", key);
           uuids.push(value);
         } else if (typeof value === "object") {
           search(value, key);
@@ -91,16 +91,24 @@ export function findUUIDs(obj: Record<string, any> | string | any[] | null) {
 // Function to get a map of old UUIDs to new UUIDs
 export async function getFullSlugUUIDs(
   uuids: string[],
+  uuidMapping: Record<string, string>,
   fetchFullSlugByUUID: (uuid: string) => Promise<string>,
   fetchUUIDByFullSlug: (fullSlug: string) => Promise<string>
 ) {
-  const uuidMapping: Record<string, string> = {};
+  let mappingChanged = false;
   for await (const uuid of uuids) {
     //const data = await fetchFullSlugByUUID(uuid);
-    const newUUID = await fetchUUIDByFullSlug(await fetchFullSlugByUUID(uuid));
-    uuidMapping[uuid] = newUUID;
+    if (!uuidMapping[uuid]) {
+      const newUUID = await fetchUUIDByFullSlug(
+        await fetchFullSlugByUUID(uuid)
+      );
+      uuidMapping[uuid] = newUUID;
+      mappingChanged = true;
+    } else {
+      console.log("UUID already exists in mapping:", uuid);
+    }
   }
-  return uuidMapping;
+  return { uuidMapping, mappingChanged };
 }
 
 // Function to replace UUIDs in the nested object

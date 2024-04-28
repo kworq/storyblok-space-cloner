@@ -14,7 +14,8 @@ export async function copyRefStories(
   source_story_folders = new Map(),
   created_count = 0,
   updated_count = 0,
-  page = 1
+  page = 1,
+  uuidMapping = {}
 ) {
   const pageLimit = 100;
   const per_page = 25;
@@ -41,13 +42,10 @@ export async function copyRefStories(
     if (!uuids_to_be_replaced.length) {
       continue;
     }
-    // console.log(
-    //   "UUIDs to be replaced: ",
-    //   uuids_to_be_replaced
-    //   //s_response?.data?.story.content
-    // );
-    const uuidMapping = await getFullSlugUUIDs(
+
+    const { mappingChanged } = await getFullSlugUUIDs(
       uuids_to_be_replaced,
+      uuidMapping,
       async (uuid: string) => {
         const response = await sourceClient.get(
           `/spaces/${SOURCE_SPACE_ID}/stories/`,
@@ -56,7 +54,7 @@ export async function copyRefStories(
           }
         );
 
-        return response.data.stories[0].full_slug;
+        return response.data.stories?.[0]?.full_slug;
       },
       async (fullSlug: string) => {
         const response = await targetClient.get(
@@ -65,11 +63,13 @@ export async function copyRefStories(
             starts_with: fullSlug,
           }
         );
-        console.log(fullSlug);
-        return response.data.stories[0].uuid;
+        return response.data.stories?.[0]?.uuid;
       }
     );
-    console.log("UUID Mapping: ", uuidMapping);
+    if (!mappingChanged) {
+      console.log("No new UUIDs found");
+      continue;
+    }
 
     replaceUUIDs(s_response?.data?.story?.content, uuidMapping);
 
@@ -117,9 +117,12 @@ export async function copyRefStories(
       source_story_folders,
       created_count,
       updated_count,
-      ++page
+      ++page,
+      uuidMapping
     );
   }
+
+  console.log("UUID Mapping: ", uuidMapping);
 
   return {
     clone_type: "stories",
