@@ -16,24 +16,23 @@ declare global {
   }
 }
 
-const { SOURCE_OAUTH_TOKEN, TARGET_OAUTH_TOKEN } = process.env;
-
-const ENDPOINT = "https://api-us.storyblok.com/v1";
+const { SOURCE_OAUTH_TOKEN, TARGET_OAUTH_TOKEN, API_ENDPOINT, API_REGION } =
+  process.env;
 
 const SourceStoryblok = new StoryblokClient(
   {
     oauthToken: SOURCE_OAUTH_TOKEN,
-    region: "us",
+    region: API_REGION,
   },
-  ENDPOINT
+  API_ENDPOINT
 );
 
 const TargetStoryblok = new StoryblokClient(
   {
     oauthToken: TARGET_OAUTH_TOKEN,
-    region: "us",
+    region: API_REGION,
   },
-  ENDPOINT
+  API_ENDPOINT
 );
 
 const ac_response = await Promise.all([
