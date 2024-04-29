@@ -67,13 +67,20 @@ export async function copyStories(
             assets.find((asset: typeof assets) => {
               return asset.filename === filename;
             }) ?? assets[0];
+
+          const filename_parts = t_asset.filename.split("/f/");
+          const api_url = "https://" + filename_parts[0].split("/").pop();
+          const asset_filename = filename_parts[1];
+          const image_service_filename = api_url + "/f/" + asset_filename;
+
           console.log(
             "Filename - found/replaced: ",
             filename,
             " / ",
-            t_asset.filename
+            image_service_filename
           );
-          return t_asset.filename;
+
+          return image_service_filename;
         });
       }
     }
