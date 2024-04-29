@@ -19,26 +19,26 @@ export async function copyRefStories(
 ) {
   const pageLimit = 100;
   const per_page = 25;
-  const s_response = await sourceClient.get(
-    `/spaces/${SOURCE_SPACE_ID}/stories/`,
+  const t_response = await targetClient.get(
+    `/spaces/${TARGET_SPACE_ID}/stories/`,
     {
       per_page,
       page,
     }
   );
-  const total = s_response.total;
-  const source_stories = new Map();
-  const sourceStories = s_response.data?.stories ?? [s_response.data.story];
+  const total = t_response.total;
+  const sourceStories = t_response.data?.stories ?? [t_response.data.story];
 
   for await (const s of sourceStories) {
-    const s_response = await sourceClient.get(
-      `/spaces/${SOURCE_SPACE_ID}/stories/${s.id}/`,
+    const t_response = await targetClient.get(
+      `/spaces/${TARGET_SPACE_ID}/stories/${s.id}/`,
       {
         story_only: true,
       }
     );
+    const t_story = t_response.data.story;
 
-    const uuids_to_be_replaced = findUUIDs(s_response?.data?.story?.content);
+    const uuids_to_be_replaced = findUUIDs(t_response?.data?.story?.content);
     if (!uuids_to_be_replaced.length) {
       continue;
     }
@@ -71,39 +71,31 @@ export async function copyRefStories(
       continue;
     }
 
-    replaceUUIDs(s_response?.data?.story?.content, uuidMapping);
-
-    const t_existing_response = await targetClient.get(
-      `/spaces/${TARGET_SPACE_ID}/stories/`,
-      {
-        starts_with: s_response?.data?.story.full_slug,
-      }
-    );
-    const s_story = s_response.data.story;
+    replaceUUIDs(t_story.content, uuidMapping);
     const story = {
-      name: s_story.name,
-      slug: s_story.slug,
-      path: s_story.path,
-      content: s_story.content,
-      position: s_story.position,
-      is_startpage: s_story.is_startpage,
-      is_folder: s_story.is_folder,
-      default_root: s_story.default_root,
-      disable_fe_editor: s_story.disable_fe_editor,
-      parent_id: t_existing_response?.data?.stories?.[0]?.parent_id ?? null,
+      name: t_story.name,
+      slug: t_story.slug,
+      path: t_story.path,
+      content: t_story.content,
+      position: t_story.position,
+      is_startpage: t_story.is_startpage,
+      is_folder: t_story.is_folder,
+      default_root: t_story.default_root,
+      disable_fe_editor: t_story.disable_fe_editor,
+      parent_id: t_story.parent_id ?? null,
       // group_id,
-      first_published_at: s_story.first_published_at,
+      first_published_at: t_story.first_published_at,
     };
-    let t_response;
-    const target_story_id = t_existing_response?.data?.stories?.[0]?.id;
+    let t_updated_response;
+    const target_story_id = t_story.id;
     try {
       if (target_story_id) {
-        t_response = await targetClient.put(
+        t_updated_response = await targetClient.put(
           `/spaces/${TARGET_SPACE_ID}/stories/${target_story_id}/`,
           { story: { ...story, id: target_story_id } }
         );
         updated_count++;
-        console.log("Updated Story", t_response.data.story.full_slug);
+        console.log("Updated Story", t_updated_response.data.story.full_slug);
       }
     } catch (e) {
       console.error(e);
