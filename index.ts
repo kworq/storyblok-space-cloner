@@ -36,14 +36,17 @@ const TargetStoryblok = new StoryblokClient(
 );
 
 const ac_response = await Promise.all([
-  // copyComponents(SourceStoryblok, TargetStoryblok),
-  // copyAssets(SourceStoryblok, TargetStoryblok),
+  copyComponents(SourceStoryblok, TargetStoryblok),
+  copyAssets(SourceStoryblok, TargetStoryblok),
 ]);
 
 console.log(ac_response);
 
 const st_response = await Promise.all([
-  copyStories(SourceStoryblok, TargetStoryblok),
+  (async () => {
+    await copyStories(SourceStoryblok, TargetStoryblok);
+    await copyRefStories(SourceStoryblok, TargetStoryblok);
+  })(),
 ]);
 
 console.log(st_response);
