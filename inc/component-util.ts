@@ -11,6 +11,7 @@ const __dirname = path.dirname(__filename);
 export async function copyComponents(
   sourceClient: StoryblokClient,
   targetClient: StoryblokClient,
+  NOW: string,
   toDisk = true,
   created_count = 0,
   updated_count = 0
@@ -23,7 +24,6 @@ export async function copyComponents(
   const source_component_groups = new Map();
   const sourceComponents = s_response.data?.components ?? [s_response.data];
   const sourceGroups = s_response.data?.component_groups ?? [s_response.data];
-  const NOW = new Date().toISOString().replace(/:/g, "-");
 
   if (toDisk) {
     for await (const type of Object.keys(s_response.data)) {
