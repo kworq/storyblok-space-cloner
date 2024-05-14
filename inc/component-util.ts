@@ -27,7 +27,7 @@ export async function copyComponents(
 
   if (toDisk) {
     for await (const type of Object.keys(s_response.data)) {
-      const __newdirname = path.join(__dirname, "backups", NOW, type);
+      const __newdirname = path.join(__dirname, "../backups", NOW, type);
       fs.mkdirSync(__newdirname, { recursive: true });
       s_response.data[type].forEach(async (item: typeof s_response.data) => {
         const jsonString = JSON.stringify(item, null, 2);
