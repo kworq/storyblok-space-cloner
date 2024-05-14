@@ -22,3 +22,5 @@ access_log
 error_log
 
 *.sh
+
+sandbox
