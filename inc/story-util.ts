@@ -1,13 +1,19 @@
 import "dotenv/config";
 import type StoryblokClient from "storyblok-js-client";
 import { findValuesByKey, updateValues } from "../utils/asset-ref-update";
-import { start } from "repl";
+import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
 
 const { SOURCE_SPACE_ID, TARGET_SPACE_ID } = process.env;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export async function copyStories(
   sourceClient: StoryblokClient,
   targetClient: StoryblokClient,
+  NOW: string,
+  toDisk = true,
   source_story_folders = new Map(),
   created_count = 0,
   updated_count = 0,
@@ -43,6 +49,28 @@ export async function copyStories(
         story_only: true,
       }
     );
+
+    if (toDisk) {
+      const __newdirname = path.join(__dirname, "../backups", NOW, "stories");
+      fs.mkdirSync(__newdirname, { recursive: true });
+      const story = s_response.data.story;
+      const jsonString = JSON.stringify(story, null, 2);
+
+      const filePath = path.join(
+        __newdirname,
+        `${story.name}_${story.id}.json`
+      );
+
+      try {
+        await fs.promises.writeFile(filePath, jsonString);
+        created_count++;
+        console.log("Successfully wrote JSON to file:", filePath);
+      } catch (e) {
+        console.error("Error writing file:", e);
+      }
+      continue;
+    }
+
     source_stories.set(s.id, s_response?.data?.story);
     const filenames = findValuesByKey(
       s_response?.data?.story?.content,
@@ -137,6 +165,8 @@ export async function copyStories(
     return await copyStories(
       sourceClient,
       targetClient,
+      NOW,
+      toDisk,
       source_story_folders,
       created_count,
       updated_count,
@@ -144,6 +174,13 @@ export async function copyStories(
     );
   }
 
+  if (toDisk) {
+    return {
+      clone_type: "stories",
+      files_created: created_count,
+      from_total: total,
+    };
+  }
   return {
     clone_type: "stories",
     created_count,
