@@ -1,9 +1,9 @@
 import "dotenv/config";
 import StoryblokClient from "storyblok-js-client";
-import { copyAssets } from "./inc/asset-util";
-import { copyComponents } from "./inc/component-util";
-import { copyStories } from "./inc/story-util";
-import { copyRefStories } from "./inc/story-ref-util";
+import { copyAssets } from "./inc/copyAssets";
+import { copyComponents } from "./inc/copyComponent";
+import { copyStories } from "./inc/copyStories";
+import { copyRefStories } from "./inc/copyStoryRefs";
 
 declare global {
   namespace NodeJS {

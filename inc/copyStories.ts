@@ -1,6 +1,6 @@
 import "dotenv/config";
 import type StoryblokClient from "storyblok-js-client";
-import { findValuesByKey, updateValues } from "../utils/asset-ref-update";
+import { findValuesByKey, updateValues } from "../utils/assetRefFindReplace";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";

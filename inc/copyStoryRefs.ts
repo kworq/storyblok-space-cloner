@@ -4,7 +4,7 @@ import {
   findUUIDs,
   getFullSlugUUIDs,
   replaceUUIDs,
-} from "../utils/story-ref-update";
+} from "../utils/storyRefFindReplace";
 
 const { SOURCE_SPACE_ID, TARGET_SPACE_ID } = process.env;
 
