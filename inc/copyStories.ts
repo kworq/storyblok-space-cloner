@@ -13,7 +13,7 @@ export async function copyStories(
   sourceClient: StoryblokClient,
   targetClient: StoryblokClient,
   NOW: string,
-  toDisk = true,
+  toDisk = false,
   source_story_folders = new Map(),
   created_count = 0,
   updated_count = 0,

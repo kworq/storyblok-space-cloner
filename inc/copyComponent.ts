@@ -12,7 +12,7 @@ export async function copyComponents(
   sourceClient: StoryblokClient,
   targetClient: StoryblokClient,
   NOW: string,
-  toDisk = true,
+  toDisk = false,
   created_count = 0,
   updated_count = 0
 ) {
