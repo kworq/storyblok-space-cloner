@@ -78,38 +78,44 @@ export async function copyStories(
     );
     if (filenames.length > 0) {
       for await (const { ref, key } of filenames) {
-        await updateValues(ref, key, async (value: string) => {
-          const filename = value.split("/").pop();
-          if (!filename || filename === "") {
-            return value;
-          }
-          const t_response = await targetClient.get(
-            `/spaces/${TARGET_SPACE_ID}/assets/`,
-            {
-              search: `/${filename}`,
+        try {
+          await updateValues(ref, key, async (value: string) => {
+            const filename = value.split("/").pop();
+            if (!filename || filename === "") {
+              return value;
             }
-          );
+            const t_response = await targetClient.get(
+              `/spaces/${TARGET_SPACE_ID}/assets/`,
+              {
+                search: `/${filename}`,
+              }
+            );
 
-          const assets = t_response.data.assets;
-          const t_asset =
-            assets.find((asset: typeof assets) => {
-              return asset.filename === filename;
-            }) ?? assets[0];
+            const assets = t_response.data.assets;
+            const t_asset =
+              assets.find((asset: typeof assets) => {
+                return asset.filename === filename;
+              }) ?? assets[0];
 
-          const filename_parts = t_asset.filename.split("/f/");
-          const api_url = "https://" + filename_parts[0].split("/").pop();
-          const asset_filename = filename_parts[1];
-          const image_service_filename = api_url + "/f/" + asset_filename;
+            const filename_parts = t_asset.filename.split("/f/");
+            const api_url = "https://" + filename_parts[0].split("/").pop();
+            const asset_filename = filename_parts[1];
+            const image_service_filename = api_url + "/f/" + asset_filename;
 
-          console.log(
-            "Filename - found/replaced: ",
-            filename,
-            " / ",
-            image_service_filename
-          );
+            console.log(
+              "Filename - found/replaced: ",
+              filename,
+              " / ",
+              image_service_filename
+            );
 
-          return image_service_filename;
-        });
+            return image_service_filename;
+          });
+        } catch (e) {
+          // console.error(e);
+          console.log(`Target asset not found: ${ref[key]}`);
+          continue;
+        }
       }
     }
 
