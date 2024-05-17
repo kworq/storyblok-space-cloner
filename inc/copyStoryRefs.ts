@@ -37,7 +37,7 @@ export async function copyRefStories(
       }
     );
     const t_story = t_response.data.story;
-
+    console.log("Processing Story", t_story.full_slug);
     const uuids_to_be_replaced = findUUIDs(t_response?.data?.story?.content);
     if (!uuids_to_be_replaced.length) {
       continue;
@@ -66,12 +66,13 @@ export async function copyRefStories(
         return response.data.stories?.[0]?.uuid;
       }
     );
+
     if (!mappingChanged) {
       console.log("No new UUIDs found");
-      continue;
     }
 
     replaceUUIDs(t_story.content, uuidMapping);
+
     const story = {
       name: t_story.name,
       slug: t_story.slug,
