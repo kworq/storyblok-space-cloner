@@ -34,9 +34,9 @@ const TargetStoryblok = new StoryblokClient(
   },
   API_ENDPOINT
 );
-
+const NOW = new Date().toISOString().replace(/:/g, "-");
 const ac_response = await Promise.all([
-  copyComponents(SourceStoryblok, TargetStoryblok),
+  copyComponents(SourceStoryblok, TargetStoryblok, NOW),
   copyAssets(SourceStoryblok, TargetStoryblok),
 ]);
 
@@ -44,8 +44,10 @@ console.log(ac_response);
 
 const st_response = await Promise.all([
   (async () => {
-    await copyStories(SourceStoryblok, TargetStoryblok);
-    await copyRefStories(SourceStoryblok, TargetStoryblok);
+    return [
+      await copyStories(SourceStoryblok, TargetStoryblok, NOW),
+      await copyRefStories(SourceStoryblok, TargetStoryblok),
+    ];
   })(),
 ]);
 
