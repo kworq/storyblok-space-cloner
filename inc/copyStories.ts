@@ -19,15 +19,21 @@ export async function copyStories(
   updated_count = 0,
   page = 1
 ) {
-  const f_response = (
-    page === 1
-      ? await copyStoryFolders(sourceClient, targetClient, source_story_folders)
-      : { source_story_folders }
-  ) as any;
-  ({ source_story_folders } = f_response);
-  if ("from_total" in f_response && f_response.from_total !== undefined) {
-    delete f_response.source_story_folders;
-    console.log(f_response);
+  if (!toDisk) {
+    const f_response = (
+      page === 1
+        ? await copyStoryFolders(
+            sourceClient,
+            targetClient,
+            source_story_folders
+          )
+        : { source_story_folders }
+    ) as any;
+    ({ source_story_folders } = f_response);
+    if ("from_total" in f_response && f_response.from_total !== undefined) {
+      delete f_response.source_story_folders;
+      console.log(f_response);
+    }
   }
   const pageLimit = 100;
   const per_page = 25;
