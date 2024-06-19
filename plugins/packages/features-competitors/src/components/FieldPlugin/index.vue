@@ -1,0 +1,162 @@
+<script setup lang="ts">
+import { useFieldPlugin } from '@storyblok/field-plugin/vue3'
+import { SbToggle, SbTextField, SbButton, SbIcon } from '@storyblok/design-system'
+import { ref, watch, onMounted } from 'vue'
+
+const plugin = useFieldPlugin({
+  validateContent: (content: unknown) => ({
+    content: content,
+  }),
+})
+
+const maxFeatureLen = ref(35)
+const features = ref([{ name: '', id: Date.now() }])
+const competitors = ref([{ name: '', id: Date.now() }])
+let initCount = 0;
+// Function to initialize data from the plugin content
+const initializeData = () => {
+  initCount++;
+  if (plugin?.type !== 'loaded') {
+    if (initCount > 10) {
+      return
+    }
+    return window.setTimeout(initializeData, 100)
+  }
+  const content = plugin?.data?.content
+  if (content) {
+    if (content.features) {
+      features.value = content.features.map(feature => ({
+        ...feature,
+        id: feature.id || Date.now(),
+      }))
+    }
+    if (content.competitors) {
+      competitors.value = content.competitors.map(competitor => ({
+        ...competitor,
+        id: competitor.id || Date.now(),
+      }))
+    }
+  }
+}
+// Inject CSS to set root font size
+const injectCSS = () => {
+  const style = document.createElement('style');
+  style.innerHTML = `
+    :root {
+      font-family: Roboto, sans-serif;
+      font-size: 62.5%;
+    }
+    .flex {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+    }
+    .flex-col {
+      flex-direction: column;
+    }
+    .flex-row {
+      flex-direction: row;
+      align-items: center;
+    }
+    .remove-button {
+      margin-left: 1rem;
+    }
+    .mt-auto {
+      margin-top: auto;
+    }
+    .sb-textfield__container {
+      flex-grow: 1;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+// Initialize data on mounted
+onMounted(() => {
+  initializeData()
+  injectCSS()
+})
+
+const addFeature = () => {
+  features.value.push({ name: '', id: Date.now() })
+}
+
+const removeFeature = (index: number) => {
+  features.value.splice(index, 1)
+}
+
+const addCompetitor = () => {
+  competitors.value.push({ name: '', id: Date.now() })
+}
+
+const removeCompetitor = (index: number) => {
+  competitors.value.splice(index, 1)
+}
+
+watch(
+  [features, competitors],
+  () => {
+    const content = {
+      features: features.value,
+      competitors: competitors.value,
+    }
+    plugin?.actions?.setContent(content)
+  },
+  { deep: true }
+)
+</script>
+
+<template>
+  <div class="flex flex-col">
+    <div class="flex flex-col" v-for="(feature, index) in features" :key="feature.id">
+      <div class="flex flex-row">
+        <span class="sb-textfield__container mt-auto">
+          <SbTextField
+          :id="'feature-' + feature.id"
+          :name="'feature-' + feature.id"
+          :label="'Feature ' + (index + 1)"
+          :maxlength="maxFeatureLen"
+          placeholder="Feature name"
+          v-model="feature.name"
+        />
+        </span>
+        
+        <SbButton v-if="index > 0" class="remove-button mt-auto sb-ml-0" size="small" @click="removeFeature(index)">
+          <SbIcon name="trash" /> 
+        </SbButton>
+      </div>
+    </div>
+    <SbButton size="small" @click="addFeature">
+      <SbIcon name="plus" /> Add Feature
+    </SbButton>
+
+    <div class="flex flex-col" v-for="(competitor, compIndex) in competitors" :key="competitor.id">
+      <div class="flex flex-row">
+        <span class="sb-textfield__container mt-auto">
+          <SbTextField
+            :id="'competitor-' + competitor.id"
+            :name="'competitor-' + competitor.id"
+            :label="'Competitor ' + (compIndex + 1)"
+            placeholder="Competitor name"
+            v-model="competitor.name"
+          />
+        </span>
+        <SbButton v-if="compIndex > 0" class="remove-button mt-auto sb-ml-0" size="small" @click="removeFeature(index)">
+          <SbIcon name="trash" /> 
+        </SbButton>
+      </div>
+      <div v-for="(feature, featIndex) in features" :key="feature.id + '-' + competitor.id">
+        <SbToggle
+          :id="'toggle-' + feature.id + '-' + competitor.id"
+          :name="'toggle-' + feature.id + '-' + competitor.id"
+          :label="feature.name || 'Feature ' + (featIndex + 1)"
+          showLabel="true"
+          v-model="competitor[feature.id]"
+        />
+      </div>
+    </div>
+    <SbButton size="small" @click="addCompetitor">
+      <SbIcon name="plus" /> Add Competitor
+    </SbButton>
+  </div>
+</template>
