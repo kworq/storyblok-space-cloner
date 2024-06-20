@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "test": "vitest",
-    "build": "vite build",
+    "build": "vue-tsc & vite build",
     "preview": "vite preview",
     "deploy": "npm run build && npx @storyblok/field-plugin-cli@latest deploy"
   },
