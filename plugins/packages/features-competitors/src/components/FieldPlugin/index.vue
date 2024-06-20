@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useFieldPlugin } from '@storyblok/field-plugin/vue3'
-import { SbToggle, SbTextField, SbButton, SbIcon } from '@storyblok/design-system'
+import { SbToggle, SbTextField, SbButton, SbIcon, SbCheckbox, SbSeparator } from '@storyblok/design-system'
 import { ref, watch, onMounted } from 'vue'
 
 const plugin = useFieldPlugin({
@@ -16,12 +16,13 @@ interface Feature {
 interface Competitor {
   name: string;
   id: number;
+  highlight: boolean;
   [key: string]: string | boolean | number;
 }
 
 const maxFeatureLen = ref(35)
 const features = ref([{ name: '', id: Date.now() }] as Feature[])
-const competitors = ref([{ name: '', id: Date.now() }] as Competitor[])
+const competitors = ref([{ name: '', id: Date.now(), highlight: false }] as Competitor[])
 let initCount = 0;
 
 const initializeData = () => {
@@ -44,6 +45,7 @@ const initializeData = () => {
       competitors.value = content.competitors.map((competitor: Competitor) => ({
         ...competitor,
         id: competitor.id || Date.now(),
+        highlight: competitor.highlight || false,
       }))
     }
   }
@@ -95,7 +97,7 @@ const removeFeature = (index: number) => {
 }
 
 const addCompetitor = () => {
-  competitors.value.push({ name: '', id: Date.now() })
+  competitors.value.push({ name: '', id: Date.now(), highlight: false })
 }
 
 const removeCompetitor = (index: number) => {
@@ -138,6 +140,7 @@ watch(
   { deep: true }
 )
 </script>
+
 <template>
   <div class="flex flex-col">
     <div v-for="(feature, index) in features" :key="feature.id" class="flex flex-col">
@@ -169,7 +172,7 @@ watch(
     <SbButton size="small" @click="addFeature">
       <SbIcon name="plus" /> Add Feature
     </SbButton>
-
+    <SbSeparator v-bind="{}" />
     <div v-for="(competitor, compIndex) in competitors" :key="competitor.id" class="flex flex-col">
       <div class="flex flex-row">
         <span class="sb-textfield__container mt-auto">
@@ -194,7 +197,16 @@ watch(
           <SbIcon name="arrow-down" />
         </SbButton>
       </div>
-
+      <div class="flex">
+        <SbCheckbox
+          :id="'highlight-' + competitor.id"
+          :name="'highlight-' + competitor.id"
+          v-model="competitor.highlight"
+          class="m-auto sb-ml-1"
+          label="Highlight Competitor"
+        />
+      </div>
+      <SbSeparator v-bind="{}" />
       <div v-for="(feature, featIndex) in features" :key="feature.id + '-' + competitor.id">
         <SbToggle
           :id="'toggle-' + feature.id + '-' + competitor.id"
@@ -204,6 +216,7 @@ watch(
           v-model="competitor[feature.id]"
         />
       </div>
+      <SbSeparator v-bind="{}" />
     </div>
     <SbButton size="small" @click="addCompetitor">
       <SbIcon name="plus" /> Add Competitor
