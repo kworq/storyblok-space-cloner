@@ -9,9 +9,19 @@ const plugin = useFieldPlugin({
   }),
 })
 
+interface Feature {
+  name: string;
+  id: number;
+}
+interface Competitor {
+  name: string;
+  id: number;
+  [key: string]: string | boolean | number;
+}
+
 const maxFeatureLen = ref(35)
-const features = ref([{ name: '', id: Date.now() }])
-const competitors = ref([{ name: '', id: Date.now() }])
+const features = ref([{ name: '', id: Date.now() }] as Feature[])
+const competitors = ref([{ name: '', id: Date.now() }] as Competitor[])
 let initCount = 0;
 // Function to initialize data from the plugin content
 const initializeData = () => {
@@ -22,16 +32,16 @@ const initializeData = () => {
     }
     return window.setTimeout(initializeData, 100)
   }
-  const content = plugin?.data?.content
+  const content = plugin?.data?.content as { features: Feature[]; competitors: Competitor[] }
   if (content) {
     if (content.features) {
-      features.value = content.features.map(feature => ({
+      features.value = content.features.map((feature: Feature) => ({
         ...feature,
         id: feature.id || Date.now(),
       }))
     }
     if (content.competitors) {
-      competitors.value = content.competitors.map(competitor => ({
+      competitors.value = content.competitors.map((competitor: Competitor) => ({
         ...competitor,
         id: competitor.id || Date.now(),
       }))
@@ -112,16 +122,21 @@ watch(
       <div class="flex flex-row">
         <span class="sb-textfield__container mt-auto">
           <SbTextField
-          :id="'feature-' + feature.id"
-          :name="'feature-' + feature.id"
-          :label="'Feature ' + (index + 1)"
-          :maxlength="maxFeatureLen"
-          placeholder="Feature name"
-          v-model="feature.name"
-        />
+            :id="'feature-' + feature.id"
+            :name="'feature-' + feature.id"
+            :label="'Feature ' + (index + 1)"
+            :maxlength="maxFeatureLen"
+            placeholder="Feature name"
+            v-model="feature.name"
+          />
         </span>
         
-        <SbButton v-if="index > 0" class="remove-button mt-auto sb-ml-0" size="small" @click="removeFeature(index)">
+        <SbButton 
+          v-if="features.length > 1" 
+          class="remove-button mt-auto sb-ml-0" 
+          size="small" 
+          @click="removeFeature(index)"
+        >
           <SbIcon name="trash" /> 
         </SbButton>
       </div>
@@ -141,7 +156,12 @@ watch(
             v-model="competitor.name"
           />
         </span>
-        <SbButton v-if="compIndex > 0" class="remove-button mt-auto sb-ml-0" size="small" @click="removeFeature(index)">
+        <SbButton 
+          v-if="competitors.length > 1" 
+          class="remove-button mt-auto sb-ml-0" 
+          size="small" 
+          @click="removeCompetitor(compIndex)"
+        >
           <SbIcon name="trash" /> 
         </SbButton>
       </div>
