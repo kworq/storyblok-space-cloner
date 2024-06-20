@@ -23,7 +23,7 @@ const maxFeatureLen = ref(35)
 const features = ref([{ name: '', id: Date.now() }] as Feature[])
 const competitors = ref([{ name: '', id: Date.now() }] as Competitor[])
 let initCount = 0;
-// Function to initialize data from the plugin content
+
 const initializeData = () => {
   initCount++;
   if (plugin?.type !== 'loaded') {
@@ -48,7 +48,7 @@ const initializeData = () => {
     }
   }
 }
-// Inject CSS to set root font size
+
 const injectCSS = () => {
   const style = document.createElement('style');
   style.innerHTML = `
@@ -81,7 +81,6 @@ const injectCSS = () => {
   document.head.appendChild(style);
 }
 
-// Initialize data on mounted
 onMounted(() => {
   initializeData()
   injectCSS()
@@ -103,6 +102,30 @@ const removeCompetitor = (index: number) => {
   competitors.value.splice(index, 1)
 }
 
+const moveFeature = (index: number, direction: 'up' | 'down') => {
+  if (direction === 'up' && index > 0) {
+    const temp = features.value[index]
+    features.value[index] = features.value[index - 1]
+    features.value[index - 1] = temp
+  } else if (direction === 'down' && index < features.value.length - 1) {
+    const temp = features.value[index]
+    features.value[index] = features.value[index + 1]
+    features.value[index + 1] = temp
+  }
+}
+
+const moveCompetitor = (index: number, direction: 'up' | 'down') => {
+  if (direction === 'up' && index > 0) {
+    const temp = competitors.value[index]
+    competitors.value[index] = competitors.value[index - 1]
+    competitors.value[index - 1] = temp
+  } else if (direction === 'down' && index < competitors.value.length - 1) {
+    const temp = competitors.value[index]
+    competitors.value[index] = competitors.value[index + 1]
+    competitors.value[index + 1] = temp
+  }
+}
+
 watch(
   [features, competitors],
   () => {
@@ -115,10 +138,9 @@ watch(
   { deep: true }
 )
 </script>
-
 <template>
   <div class="flex flex-col">
-    <div class="flex flex-col" v-for="(feature, index) in features" :key="feature.id">
+    <div v-for="(feature, index) in features" :key="feature.id" class="flex flex-col">
       <div class="flex flex-row">
         <span class="sb-textfield__container mt-auto">
           <SbTextField
@@ -131,13 +153,16 @@ watch(
           />
         </span>
         
-        <SbButton 
-          v-if="features.length > 1" 
-          class="remove-button mt-auto sb-ml-0" 
-          size="small" 
-          @click="removeFeature(index)"
-        >
+        <SbButton v-if="features.length > 1" class="remove-button mt-auto sb-ml-0" size="small" @click="removeFeature(index)">
           <SbIcon name="trash" /> 
+        </SbButton>
+
+        <SbButton v-if="index > 0" class="mt-auto sb-ml-0" size="small" @click="moveFeature(index, 'up')">
+          <SbIcon name="arrow-up" />
+        </SbButton>
+
+        <SbButton v-if="index < features.length - 1" class="mt-auto sb-ml-0" size="small" @click="moveFeature(index, 'down')">
+          <SbIcon name="arrow-down" />
         </SbButton>
       </div>
     </div>
@@ -145,7 +170,7 @@ watch(
       <SbIcon name="plus" /> Add Feature
     </SbButton>
 
-    <div class="flex flex-col" v-for="(competitor, compIndex) in competitors" :key="competitor.id">
+    <div v-for="(competitor, compIndex) in competitors" :key="competitor.id" class="flex flex-col">
       <div class="flex flex-row">
         <span class="sb-textfield__container mt-auto">
           <SbTextField
@@ -156,21 +181,26 @@ watch(
             v-model="competitor.name"
           />
         </span>
-        <SbButton 
-          v-if="competitors.length > 1" 
-          class="remove-button mt-auto sb-ml-0" 
-          size="small" 
-          @click="removeCompetitor(compIndex)"
-        >
+        
+        <SbButton v-if="competitors.length > 1" class="remove-button mt-auto sb-ml-0" size="small" @click="removeCompetitor(compIndex)">
           <SbIcon name="trash" /> 
         </SbButton>
+
+        <SbButton v-if="compIndex > 0" class="mt-auto sb-ml-0" size="small" @click="moveCompetitor(compIndex, 'up')">
+          <SbIcon name="arrow-up" />
+        </SbButton>
+
+        <SbButton v-if="compIndex < competitors.length - 1" class="mt-auto sb-ml-0" size="small" @click="moveCompetitor(compIndex, 'down')">
+          <SbIcon name="arrow-down" />
+        </SbButton>
       </div>
+
       <div v-for="(feature, featIndex) in features" :key="feature.id + '-' + competitor.id">
         <SbToggle
           :id="'toggle-' + feature.id + '-' + competitor.id"
           :name="'toggle-' + feature.id + '-' + competitor.id"
           :label="feature.name || 'Feature ' + (featIndex + 1)"
-          showLabel="true"
+          :showLabel="true"
           v-model="competitor[feature.id]"
         />
       </div>
