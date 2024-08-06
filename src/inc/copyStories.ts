@@ -61,16 +61,13 @@ export async function copyStories(
       fs.mkdirSync(__newdirname, { recursive: true });
       const story = s_response.data.story;
       const jsonString = JSON.stringify(story, null, 2);
-
-      const filePath = path.join(
-        __newdirname,
-        `${story.name}_${story.id}.json`
-      );
+      const fileName = `${story.name}_${story.id}.json`;
+      const filePath = path.join(__newdirname, fileName);
 
       try {
         await fs.promises.writeFile(filePath, jsonString);
         created_count++;
-        console.log("Successfully wrote JSON to file:", filePath);
+        console.log("Successfully wrote Story JSON to file:", fileName);
       } catch (e) {
         console.error("Error writing file:", e);
       }

@@ -15,7 +15,7 @@ Before using this package, you must:
 - Obtain the API OAuth personal access tokens for both spaces.
 
 ## Run
-node --import ./esm-loader.mjs index.ts
+node --import ./esm-loader.mjs app.ts
 
 ## License
 

@@ -118,7 +118,7 @@ export async function copyRefStories(
   console.log("UUID Mapping: ", uuidMapping);
 
   return {
-    clone_type: "stories",
+    clone_type: "story refs",
     created_count,
     updated_count,
     from_total: total,

@@ -31,12 +31,12 @@ export async function copyComponents(
       fs.mkdirSync(__newdirname, { recursive: true });
       s_response.data[type].forEach(async (item: typeof s_response.data) => {
         const jsonString = JSON.stringify(item, null, 2);
-
-        const filePath = path.join(__newdirname, `${item.name}.json`);
+        const fileName = `${item.name}.json`;
+        const filePath = path.join(__newdirname, fileName);
 
         try {
           await fs.promises.writeFile(filePath, jsonString);
-          console.log("Successfully wrote JSON to file:", filePath);
+          console.log("Successfully wrote Component JSON to file:", fileName);
         } catch (e) {
           console.error("Error writing file:", e);
         }
