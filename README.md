@@ -17,7 +17,7 @@ Before using this package, you must:
 
 ```typescript
 import "dotenv/config";
-import StoryblokSpaceCloner from "./dist/index";
+import StoryblokSpaceCloner from "./src/index";
 
 const config = {
   SOURCE_OAUTH_TOKEN: process.env.SOURCE_OAUTH_TOKEN as string,
@@ -42,6 +42,9 @@ cloner.copy({
 
 ## Run
 node --import ./esm-loader.mjs app.ts
+
+## Plugins
+- These are Storyblok plugins of the field type. Not really related to the main cloning features, but perhaps usefull to some. We will continue to add more of them.
 
 ## License
 

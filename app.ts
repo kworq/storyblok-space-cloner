@@ -1,5 +1,5 @@
 import "dotenv/config";
-import StoryblokSpaceCloner from "./dist/index";
+import StoryblokSpaceCloner from "./src/index";
 
 const config = {
   SOURCE_OAUTH_TOKEN: process.env.SOURCE_OAUTH_TOKEN as string,
