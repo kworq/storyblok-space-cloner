@@ -44,7 +44,7 @@ cloner.copy({
 node --import ./esm-loader.mjs app.ts
 
 ## Plugins
-- These are Storyblok plugins of the field type. Not really related to the main cloning features, but perhaps usefull to some. We will continue to add more of them.
+In the plugins folder, there are Storyblok packages. These are field type plugins for Storyblok's visual UI. Not related to the main cloning features, but perhaps usefull to some. We will continue to add more of them.
 
 ## License
 
