@@ -38,7 +38,7 @@ cloner.copy({
   components: { toDisk: false },
   stories: { toDisk: false },
 });
-
+```
 
 ## Run
 node --import ./esm-loader.mjs app.ts
