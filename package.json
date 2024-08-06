@@ -1,21 +1,52 @@
 {
-  "name": "storyblok-sync",
   "type": "module",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "dependencies": {
-    "@dotenvx/dotenvx": "^0.35.1",
-    "form-data": "^4.0.0",
-    "storyblok-js-client": "^6.7.3"
-  },
+  "name": "@kworq/storyblok-space-cloner",
+  "version": "0.1.0",
+  "description": "A Node.js module for posting tweets with media (images, videos, GIFs) to X (formerly Twitter) using the API. It handles authentication, media uploading, and posting tweets.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE.md",
+    "package.json"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest",
+    "clean": "rimraf dist",
+    "build": "npm run clean && tsc"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kworq/storyblok-space-cloner.git"
+  },
+  "keywords": [
+    "storyblok",
+    "space",
+    "cloner",
+    "copy components",
+    "copy stories",
+    "copy assets",
+    "content migration",
+    "space cloning",
+    "Storyblok API",
+    "Storyblok tools",
+    "content transfer",
+    "development",
+    "testing",
+    "migration"
+  ],
   "author": "Guy Peires",
-  "license": "ISC",
+  "license": "MIT",
+  "dependencies": {
+    "form-data": "^4.0.0",
+    "storyblok-js-client": "^6.8.1"
+  },
   "devDependencies": {
+    "@dotenvx/dotenvx": "^1.6.4",
+    "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.4.5"
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5"
   }
 }

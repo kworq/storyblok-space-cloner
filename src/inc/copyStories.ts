@@ -370,7 +370,7 @@ export async function createStoryFolders(
 
 export async function getStoryFolders(
   client: StoryblokClient,
-  SPACE_ID: string,
+  SPACE_ID: string | undefined,
   storyFolders: any = [],
   page = 1
 ) {

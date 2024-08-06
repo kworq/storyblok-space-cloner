@@ -7,6 +7,7 @@ This package provides tools to efficiently copy components, stories, and assets 
 - **Copy Assets**: Clone all digital assets.
 - **Copy Components**: Clone all components' schemas.
 - **Copy Stories**: Clone all stories including all associated content and configurations.
+- **Copy Story References**: Replace all story references with cloned story references.
 
 ## Prerequisites
 Before using this package, you must:
@@ -15,3 +16,7 @@ Before using this package, you must:
 
 ## Run
 node --import ./esm-loader.mjs index.ts
+
+## License
+
+This project is licensed under the MIT License.
