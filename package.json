@@ -1,8 +1,8 @@
 {
   "type": "module",
   "name": "@kworq/storyblok-space-cloner",
-  "version": "0.1.0",
-  "description": "A Node.js module for posting tweets with media (images, videos, GIFs) to X (formerly Twitter) using the API. It handles authentication, media uploading, and posting tweets.",
+  "version": "0.1.1",
+  "description": "Tools to efficiently copy components, stories, and assets from one Storyblok space to another. Simplifies cloning for development, testing, or migration purposes, ensuring seamless transfer of content and structure.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
