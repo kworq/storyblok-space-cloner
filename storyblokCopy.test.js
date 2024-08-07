@@ -36,7 +36,6 @@ describe("StoryblokSpaceCloner", () => {
     await cloner.copy({ components: true });
     expect(copyComponents).toHaveBeenCalledWith(
       expect.any(Object),
-      expect.any(Object),
       expect.any(String),
       false
     );
@@ -44,16 +43,12 @@ describe("StoryblokSpaceCloner", () => {
 
   it("should call copyAssets when assets option is provided", async () => {
     await cloner.copy({ assets: true });
-    expect(copyAssets).toHaveBeenCalledWith(
-      expect.any(Object),
-      expect.any(Object)
-    );
+    expect(copyAssets).toHaveBeenCalledWith(expect.any(Object));
   });
 
   it("should call copyStories when stories option is provided", async () => {
     await cloner.copy({ stories: true });
     expect(copyStories).toHaveBeenCalledWith(
-      expect.any(Object),
       expect.any(Object),
       expect.any(String),
       false
@@ -62,10 +57,7 @@ describe("StoryblokSpaceCloner", () => {
 
   it("should call copyRefStories when stories option is provided and not toDisk", async () => {
     await cloner.copy({ stories: true });
-    expect(copyRefStories).toHaveBeenCalledWith(
-      expect.any(Object),
-      expect.any(Object)
-    );
+    expect(copyRefStories).toHaveBeenCalledWith(expect.any(Object));
   });
 
   it("should not call copyRefStories when stories option is provided and toDisk", async () => {
