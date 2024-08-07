@@ -15,17 +15,17 @@ Before using this package, you must:
 
 ## Example
 
-```typescript
+```javascript
 import "dotenv/config";
-import StoryblokSpaceCloner from "./src/index";
+import StoryblokSpaceCloner from "@kworq/storyblok-space-cloner";
 
 const config = {
-  SOURCE_OAUTH_TOKEN: process.env.SOURCE_OAUTH_TOKEN as string,
-  TARGET_OAUTH_TOKEN: process.env.TARGET_OAUTH_TOKEN as string,
-  SOURCE_SPACE_ID: process.env.SOURCE_SPACE_ID as string,
-  TARGET_SPACE_ID: process.env.TARGET_SPACE_ID as string,
-  API_REGION: process.env.API_REGION as string,
-  API_ENDPOINT: process.env.API_ENDPOINT as string,
+  SOURCE_OAUTH_TOKEN: process.env.SOURCE_OAUTH_TOKEN,
+  TARGET_OAUTH_TOKEN: process.env.TARGET_OAUTH_TOKEN,
+  SOURCE_SPACE_ID: process.env.SOURCE_SPACE_ID,
+  TARGET_SPACE_ID: process.env.TARGET_SPACE_ID,
+  API_REGION: process.env.API_REGION,
+  API_ENDPOINT: process.env.API_ENDPOINT,
 };
 
 const cloner = new StoryblokSpaceCloner(config);
