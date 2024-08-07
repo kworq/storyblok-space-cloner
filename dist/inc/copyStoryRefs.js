@@ -1,17 +1,16 @@
-import "dotenv/config";
-import { findUUIDs, getFullSlugUUIDs, replaceUUIDs, } from "../utils/storyRefFindReplace";
-const { SOURCE_SPACE_ID, TARGET_SPACE_ID } = process.env;
-export async function copyRefStories(sourceClient, targetClient, source_story_folders = new Map(), created_count = 0, updated_count = 0, page = 1, uuidMapping = {}) {
+import { findUUIDs, getFullSlugUUIDs, replaceUUIDs, } from "../utils/storyRefFindReplace.js";
+export async function copyRefStories(clients, source_story_folders = new Map(), created_count = 0, updated_count = 0, page = 1, uuidMapping = {}) {
+    const { source, target } = clients;
     const pageLimit = 100;
     const per_page = 25;
-    const t_response = await targetClient.get(`/spaces/${TARGET_SPACE_ID}/stories/`, {
+    const t_response = await target.client.get(`/spaces/${target.spaceId}/stories/`, {
         per_page,
         page,
     });
     const total = t_response.total;
     const sourceStories = t_response.data?.stories ?? [t_response.data.story];
     for await (const s of sourceStories) {
-        const t_response = await targetClient.get(`/spaces/${TARGET_SPACE_ID}/stories/${s.id}/`, {
+        const t_response = await target.client.get(`/spaces/${target.spaceId}/stories/${s.id}/`, {
             story_only: true,
         });
         const t_story = t_response.data.story;
@@ -21,12 +20,12 @@ export async function copyRefStories(sourceClient, targetClient, source_story_fo
             continue;
         }
         const { mappingChanged } = await getFullSlugUUIDs(uuids_to_be_replaced, uuidMapping, async (uuid) => {
-            const response = await sourceClient.get(`/spaces/${SOURCE_SPACE_ID}/stories/`, {
+            const response = await source.client.get(`/spaces/${source.spaceId}/stories/`, {
                 by_uuids: uuid,
             });
             return response.data.stories?.[0]?.full_slug;
         }, async (fullSlug) => {
-            const response = await targetClient.get(`/spaces/${TARGET_SPACE_ID}/stories/`, {
+            const response = await target.client.get(`/spaces/${target.spaceId}/stories/`, {
                 starts_with: fullSlug,
             });
             return response.data.stories?.[0]?.uuid;
@@ -53,7 +52,7 @@ export async function copyRefStories(sourceClient, targetClient, source_story_fo
         const target_story_id = t_story.id;
         try {
             if (target_story_id) {
-                t_updated_response = await targetClient.put(`/spaces/${TARGET_SPACE_ID}/stories/${target_story_id}/`, { story: { ...story, id: target_story_id } });
+                t_updated_response = await target.client.put(`/spaces/${target.client}/stories/${target_story_id}/`, { story: { ...story, id: target_story_id } });
                 updated_count++;
                 console.log("Updated Story", t_updated_response.data.story.full_slug);
             }
@@ -63,7 +62,7 @@ export async function copyRefStories(sourceClient, targetClient, source_story_fo
         }
     }
     if (total > page * per_page && page <= pageLimit) {
-        return await copyRefStories(sourceClient, targetClient, source_story_folders, created_count, updated_count, ++page, uuidMapping);
+        return await copyRefStories(clients, source_story_folders, created_count, updated_count, ++page, uuidMapping);
     }
     console.log("UUID Mapping: ", uuidMapping);
     return {

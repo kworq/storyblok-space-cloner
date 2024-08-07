@@ -1,6 +1,14 @@
-import "dotenv/config";
 import type StoryblokClient from "storyblok-js-client";
-export declare function copyComponents(sourceClient: StoryblokClient, targetClient: StoryblokClient, NOW: string, toDisk?: boolean, created_count?: number, updated_count?: number): Promise<{
+export declare function copyComponents(clients: {
+    source: {
+        client: StoryblokClient;
+        spaceId: string;
+    };
+    target: {
+        client: StoryblokClient;
+        spaceId: string;
+    };
+}, NOW: string, toDisk?: boolean, created_count?: number, updated_count?: number): Promise<{
     clone_type: string;
     files_created: number;
     components_copied: any;

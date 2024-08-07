@@ -1,8 +1,8 @@
 import StoryblokClient from "storyblok-js-client";
-import { copyAssets } from "./inc/copyAssets";
-import { copyComponents } from "./inc/copyComponent";
-import { copyStories } from "./inc/copyStories";
-import { copyRefStories } from "./inc/copyStoryRefs";
+import { copyAssets } from "./inc/copyAssets.js";
+import { copyComponents } from "./inc/copyComponent.js";
+import { copyStories } from "./inc/copyStories.js";
+import { copyRefStories } from "./inc/copyStoryRefs.js";
 export default class StoryblokSpaceCloner {
     config;
     constructor(config) {
@@ -17,17 +17,21 @@ export default class StoryblokSpaceCloner {
             oauthToken: this.config.TARGET_OAUTH_TOKEN,
             region: this.config.API_REGION,
         }, this.config.API_ENDPOINT);
+        const clients = {
+            source: { client: SourceStoryblok, spaceId: this.config.SOURCE_SPACE_ID },
+            target: { client: TargetStoryblok, spaceId: this.config.TARGET_SPACE_ID },
+        };
         const NOW = new Date().toISOString().replace(/:/g, "-");
         if (options.components || options.assets) {
             const ac = [];
             if (options.components) {
-                ac.push(copyComponents(SourceStoryblok, TargetStoryblok, NOW, typeof options.components == "object" && options.components.toDisk));
+                ac.push(copyComponents(clients, NOW, typeof options.components == "object" && options.components.toDisk));
             }
             if (options.assets) {
                 const toDisk = typeof options.assets == "object" && options.assets.toDisk;
                 // TODO: functionality to download assets to disk
                 if (!toDisk)
-                    ac.push(copyAssets(SourceStoryblok, TargetStoryblok));
+                    ac.push(copyAssets(clients));
             }
             const ac_response = await Promise.all(ac);
             console.log(ac_response);
@@ -35,9 +39,9 @@ export default class StoryblokSpaceCloner {
         if (options.stories) {
             const sr = [];
             const toDisk = typeof options.stories == "object" && options.stories.toDisk;
-            sr.push(await copyStories(SourceStoryblok, TargetStoryblok, NOW, toDisk));
+            sr.push(await copyStories(clients, NOW, toDisk));
             if (!toDisk) {
-                sr.push(await copyRefStories(SourceStoryblok, TargetStoryblok));
+                sr.push(await copyRefStories(clients));
             }
             const st_response = await Promise.all([
                 (async () => {
