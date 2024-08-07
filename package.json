@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "@kworq/storyblok-space-cloner",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Tools to efficiently copy components, stories, and assets from one Storyblok space to another. Simplifies cloning for development, testing, or migration purposes, ensuring seamless transfer of content and structure.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -14,7 +14,7 @@
   "scripts": {
     "test": "vitest",
     "clean": "rimraf dist",
-    "build": "npm run clean && tsc"
+    "build": "npm run clean && tsc && tsc-alias"
   },
   "repository": {
     "type": "git",
@@ -46,6 +46,7 @@
     "@dotenvx/dotenvx": "^1.6.4",
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
+    "tsc-alias": "^1.8.10",
     "typescript": "^5.5.4",
     "vitest": "^2.0.5"
   }
