@@ -38,10 +38,7 @@ export declare function copyStoryFolders(clients: {
     from_total: number;
     source_story_folders: Map<string | number, any>;
 }>;
-export declare function createStoryFolders(target: {
-    client: StoryblokClient;
-    spaceId: string;
-}, source_story_folders: Map<string | number, any>, created_count: number, updated_count: number, failed_count: number, skipped_story_folder_ids?: Set<unknown>, page?: number): Promise<{
+export declare function createStoryFolders(targetClient: StoryblokClient, targetSpaceId: string, source_story_folders: Map<string | number, any>, created_count: number, updated_count: number, failed_count: number, skipped_story_folder_ids?: Set<unknown>, page?: number): Promise<{
     source_story_folders: Map<string | number, any>;
     created_count: number;
     updated_count: number;

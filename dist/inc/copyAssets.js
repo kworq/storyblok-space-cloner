@@ -1,12 +1,13 @@
 import FormData from "form-data";
 export async function copyAssets(clients, created_count = 0, skipped_count = 0, page = 1, unique_assets = new Map()) {
-    const { source, target } = clients;
+    const { client: sourceClient, spaceId: sourceSpaceId } = clients.source;
+    const { client: targetClient, spaceId: targetSpaceId } = clients.target;
     const f_response = await copyAssetFolders(clients);
     // console.log(f_response);
     // return;
     const pageLimit = 100;
     const per_page = 25;
-    const s_response = await source.client.get(`/spaces/${source.spaceId}/assets/`, {
+    const s_response = await sourceClient.get(`/spaces/${sourceSpaceId}/assets/`, {
         per_page,
         page,
     });
@@ -28,7 +29,7 @@ export async function copyAssets(clients, created_count = 0, skipped_count = 0, 
         const source = asset.source;
         //return;
         //console.log(asset);
-        const t_response = await target.client.get(`/spaces/${target.spaceId}/assets/`, {
+        const t_response = await targetClient.get(`/spaces/${targetSpaceId}/assets/`, {
             search: `/${filename}`,
         });
         if (t_response.data.assets.length) {
@@ -36,7 +37,7 @@ export async function copyAssets(clients, created_count = 0, skipped_count = 0, 
             skipped_count++;
             continue;
         }
-        uploadPromises.push(uploadFile(target, sourceFilename, {
+        uploadPromises.push(uploadFile(targetClient, targetSpaceId, sourceFilename, {
             filename,
             size,
             alt,
@@ -71,8 +72,8 @@ export async function copyAssets(clients, created_count = 0, skipped_count = 0, 
         };
     }
 }
-export async function uploadFile(target, sourceFilename, fileOptions) {
-    const uploadRes = await target.client.post(`/spaces/${target.spaceId}/assets/`, fileOptions);
+export async function uploadFile(targetClient, targetSpaceId, sourceFilename, fileOptions) {
+    const uploadRes = await targetClient.post(`/spaces/${targetSpaceId}/assets/`, fileOptions);
     const signed_response_object = uploadRes.data;
     let form = new FormData();
     for (let key in signed_response_object.fields) {
@@ -85,7 +86,7 @@ export async function uploadFile(target, sourceFilename, fileOptions) {
             if (err)
                 throw err;
             try {
-                const response = await target.client.get(`spaces/${target.spaceId}/assets/${signed_response_object.id}/finish_upload`);
+                const response = await targetClient.get(`spaces/${targetSpaceId}/assets/${signed_response_object.id}/finish_upload`);
                 //console.log(response);
                 console.log(`Status: ${200} Created asset id: ${response.data.id} filename: ${response.data.filename}`);
                 resolve([sourceFilename, response.data]);
@@ -109,12 +110,13 @@ export async function fetchAssetBuffer(url) {
     }
 }
 export async function copyAssetFolders(clients) {
-    const { source, target } = clients;
-    const s_response = await source.client.get(`/spaces/${source.spaceId}/asset_folders/`, {});
+    const { client: sourceClient, spaceId: sourceSpaceId } = clients.source;
+    const { client: targetClient, spaceId: targetSpaceId } = clients.target;
+    const s_response = await sourceClient.get(`/spaces/${sourceSpaceId}/asset_folders/`, {});
     const sourceAssetFolders = s_response.data.asset_folders;
     const asset_parent_folders = sourceAssetFolders.filter((folder) => folder.parent_id === 0);
     const asset_folders = sourceAssetFolders.filter((folder) => folder.parent_id !== 0);
-    const t_response = await target.client.get(`/spaces/${target.spaceId}/asset_folders/`, {});
+    const t_response = await targetClient.get(`/spaces/${targetSpaceId}/asset_folders/`, {});
     const targetAssetFolders = t_response.data.asset_folders;
     const unique_parent_folders = new Map();
     for (const folder of asset_parent_folders) {
@@ -132,7 +134,7 @@ export async function copyAssetFolders(clients) {
     for await (const [key, folder] of unique_parent_folders) {
         if (folder.target_id)
             continue;
-        const res = await target.client.post(`/spaces/${target.spaceId}/asset_folders/`, {
+        const res = await targetClient.post(`/spaces/${targetSpaceId}/asset_folders/`, {
             asset_folder: {
                 name: folder.name,
                 parent_id: folder.parent_id,
@@ -162,7 +164,7 @@ export async function copyAssetFolders(clients) {
     for await (const [key, folder] of unique_folders) {
         if (folder.target_id)
             continue;
-        const res = await target.client.post(`/spaces/${target.spaceId}/asset_folders/`, {
+        const res = await targetClient.post(`/spaces/${targetSpaceId}/asset_folders/`, {
             asset_folder: {
                 name: folder.name,
                 parent_id: unique_parent_folders.get(folder.parent_id).target_id,

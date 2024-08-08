@@ -14,10 +14,7 @@ export declare function copyAssets(clients: {
     skipped_count: number;
     from_total: any;
 }>;
-export declare function uploadFile(target: {
-    client: StoryblokClient;
-    spaceId: string;
-}, sourceFilename: string, fileOptions: Record<string, any>): Promise<[string, any]>;
+export declare function uploadFile(targetClient: StoryblokClient, targetSpaceId: string, sourceFilename: string, fileOptions: Record<string, any>): Promise<[string, any]>;
 export declare function fetchAssetBuffer(url: string): Promise<Buffer | undefined>;
 export declare function copyAssetFolders(clients: {
     source: {

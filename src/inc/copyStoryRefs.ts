@@ -16,11 +16,12 @@ export async function copyRefStories(
   page = 1,
   uuidMapping = {}
 ) {
-  const { source, target } = clients;
+  const { client: sourceClient, spaceId: sourceSpaceId } = clients.source;
+  const { client: targetClient, spaceId: targetSpaceId } = clients.target;
   const pageLimit = 100;
   const per_page = 25;
-  const t_response = await target.client.get(
-    `/spaces/${target.spaceId}/stories/`,
+  const t_response = await targetClient.get(
+    `/spaces/${targetSpaceId}/stories/`,
     {
       per_page,
       page,
@@ -30,8 +31,8 @@ export async function copyRefStories(
   const sourceStories = t_response.data?.stories ?? [t_response.data.story];
 
   for await (const s of sourceStories) {
-    const t_response = await target.client.get(
-      `/spaces/${target.spaceId}/stories/${s.id}/`,
+    const t_response = await targetClient.get(
+      `/spaces/${targetSpaceId}/stories/${s.id}/`,
       {
         story_only: true,
       }
@@ -47,8 +48,8 @@ export async function copyRefStories(
       uuids_to_be_replaced,
       uuidMapping,
       async (uuid: string) => {
-        const response = await source.client.get(
-          `/spaces/${source.spaceId}/stories/`,
+        const response = await sourceClient.get(
+          `/spaces/${sourceSpaceId}/stories/`,
           {
             by_uuids: uuid,
           }
@@ -57,8 +58,8 @@ export async function copyRefStories(
         return response.data.stories?.[0]?.full_slug;
       },
       async (fullSlug: string) => {
-        const response = await target.client.get(
-          `/spaces/${target.spaceId}/stories/`,
+        const response = await targetClient.get(
+          `/spaces/${targetSpaceId}/stories/`,
           {
             starts_with: fullSlug,
           }
@@ -91,8 +92,8 @@ export async function copyRefStories(
     const target_story_id = t_story.id;
     try {
       if (target_story_id) {
-        t_updated_response = await target.client.put(
-          `/spaces/${target.client}/stories/${target_story_id}/`,
+        t_updated_response = await targetClient.put(
+          `/spaces/${targetSpaceId}/stories/${target_story_id}/`,
           { story: { ...story, id: target_story_id } }
         );
         updated_count++;

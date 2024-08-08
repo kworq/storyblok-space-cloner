@@ -19,7 +19,8 @@ export async function copyStories(
   updated_count = 0,
   page = 1
 ) {
-  const { source, target } = clients;
+  const { client: sourceClient, spaceId: sourceSpaceId } = clients.source;
+  const { client: targetClient, spaceId: targetSpaceId } = clients.target;
   if (!toDisk) {
     const f_response = (
       page === 1
@@ -34,8 +35,8 @@ export async function copyStories(
   }
   const pageLimit = 100;
   const per_page = 25;
-  const s_response = await source.client.get(
-    `/spaces/${source.spaceId}/stories/`,
+  const s_response = await sourceClient.get(
+    `/spaces/${sourceSpaceId}/stories/`,
     {
       per_page,
       page,
@@ -46,8 +47,8 @@ export async function copyStories(
   const sourceStories = s_response.data?.stories ?? [s_response.data.story];
 
   for await (const s of sourceStories) {
-    const s_response = await source.client.get(
-      `/spaces/${source.spaceId}/stories/${s.id}/`,
+    const s_response = await sourceClient.get(
+      `/spaces/${sourceSpaceId}/stories/${s.id}/`,
       {
         story_only: true,
       }
@@ -84,8 +85,8 @@ export async function copyStories(
             if (!filename || filename === "") {
               return value;
             }
-            const t_response = await target.client.get(
-              `/spaces/${target.spaceId}/assets/`,
+            const t_response = await targetClient.get(
+              `/spaces/${targetSpaceId}/assets/`,
               {
                 search: `/${filename}`,
               }
@@ -119,8 +120,8 @@ export async function copyStories(
       }
     }
 
-    const t_existing_response = await target.client.get(
-      `/spaces/${target.spaceId}/stories/`,
+    const t_existing_response = await targetClient.get(
+      `/spaces/${targetSpaceId}/stories/`,
       {
         starts_with: s_response?.data?.story.full_slug,
       }
@@ -145,15 +146,15 @@ export async function copyStories(
     const target_story_id = t_existing_response?.data?.stories?.[0]?.id;
     try {
       if (!target_story_id) {
-        t_response = await target.client.post(
-          `/spaces/${target.spaceId}/stories/`,
+        t_response = await targetClient.post(
+          `/spaces/${targetSpaceId}/stories/`,
           { story }
         );
         created_count++;
         console.log("Created Story", t_response.data.story.full_slug);
       } else {
-        t_response = await target.client.put(
-          `/spaces/${target.spaceId}/stories/${target_story_id}/`,
+        t_response = await targetClient.put(
+          `/spaces/${targetSpaceId}/stories/${target_story_id}/`,
           { story: { ...story, id: target_story_id } }
         );
         updated_count++;
@@ -204,16 +205,11 @@ export async function copyStoryFolders(
   updated_count = 0,
   failed_count = 0
 ) {
-  const { source, target } = clients;
-  const sourceStoryFolders = await getStoryFolders(
-    source.client,
-    source.spaceId
-  );
+  const { client: sourceClient, spaceId: sourceSpaceId } = clients.source;
+  const { client: targetClient, spaceId: targetSpaceId } = clients.target;
+  const sourceStoryFolders = await getStoryFolders(sourceClient, sourceSpaceId);
 
-  const targetStoryFolders = await getStoryFolders(
-    target.client,
-    target.spaceId
-  );
+  const targetStoryFolders = await getStoryFolders(targetClient, targetSpaceId);
 
   // Create Top Most Story Folders
   for await (const sf of sourceStoryFolders) {
@@ -236,8 +232,8 @@ export async function copyStoryFolders(
     if (tf) {
       sf.target_id = tf.id;
       try {
-        const t_response = await target.client.put(
-          `/spaces/${target.spaceId}/stories/${tf.id}/`,
+        const t_response = await targetClient.put(
+          `/spaces/${targetSpaceId}/stories/${tf.id}/`,
           {
             story: {
               ...story,
@@ -253,8 +249,8 @@ export async function copyStoryFolders(
     } else {
       if (!sf.parent_id) {
         try {
-          const t_response = await target.client.post(
-            `/spaces/${target.spaceId}/stories/`,
+          const t_response = await targetClient.post(
+            `/spaces/${targetSpaceId}/stories/`,
             {
               story,
             }
@@ -270,7 +266,8 @@ export async function copyStoryFolders(
   }
 
   const stories = await createStoryFolders(
-    target,
+    targetClient,
+    targetSpaceId,
     source_story_folders,
     created_count,
     updated_count,
@@ -288,7 +285,8 @@ export async function copyStoryFolders(
 }
 
 export async function createStoryFolders(
-  target: { client: StoryblokClient; spaceId: string },
+  targetClient: StoryblokClient,
+  targetSpaceId: string,
   source_story_folders: Map<string | number, any>,
   created_count: number,
   updated_count: number,
@@ -329,8 +327,8 @@ export async function createStoryFolders(
         parent_id: target_parent_id,
         // TODO: group_id
       };
-      const t_response = await target.client.post(
-        `/spaces/${target.spaceId}/stories/`,
+      const t_response = await targetClient.post(
+        `/spaces/${targetSpaceId}/stories/`,
         {
           story: {
             ...story,
@@ -348,7 +346,8 @@ export async function createStoryFolders(
   }
   if (skipped_story_folder_ids.size > 0) {
     return await createStoryFolders(
-      target,
+      targetClient,
+      targetSpaceId,
       source_story_folders,
       created_count,
       updated_count,

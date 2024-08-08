@@ -4,8 +4,9 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 export async function copyComponents(clients, NOW, toDisk = false, created_count = 0, updated_count = 0) {
-    const { source, target } = clients;
-    const s_response = await source.client.get(`/spaces/${source.spaceId}/components/`, {});
+    const { client: sourceClient, spaceId: sourceSpaceId } = clients.source;
+    const { client: targetClient, spaceId: targetSpaceId } = clients.target;
+    const s_response = await sourceClient.get(`/spaces/${sourceSpaceId}/components/`, {});
     const source_components = new Map();
     const source_component_groups = new Map();
     const sourceComponents = s_response.data?.components ?? [s_response.data];
@@ -40,7 +41,7 @@ export async function copyComponents(clients, NOW, toDisk = false, created_count
     sourceGroups?.forEach((component) => {
         source_component_groups.set(component.name, component);
     });
-    const t_response = await target.client.get(`/spaces/${target.spaceId}/components/`, {});
+    const t_response = await targetClient.get(`/spaces/${targetSpaceId}/components/`, {});
     const target_components = new Map();
     const target_component_groups = new Map();
     const targetComponents = t_response.data.components ?? [t_response.data];
@@ -54,12 +55,12 @@ export async function copyComponents(clients, NOW, toDisk = false, created_count
     for await (const [key, _component_group] of source_component_groups) {
         const { name } = _component_group;
         const component_group = { name };
-        const endpoint = `/spaces/${target.spaceId}/component_groups/`;
+        const endpoint = `/spaces/${targetSpaceId}/component_groups/`;
         const t_group = target_component_groups.get(key);
         const component_group_id = t_group?.id;
         if (component_group_id) {
             try {
-                const res = await target.client.put(`${endpoint}${component_group_id}`, {
+                const res = await targetClient.put(`${endpoint}${component_group_id}`, {
                     component_group: {
                         ...component_group,
                         id: component_group_id,
@@ -77,7 +78,7 @@ export async function copyComponents(clients, NOW, toDisk = false, created_count
         }
         else {
             try {
-                const res = await target.client.post(endpoint, {
+                const res = await targetClient.post(endpoint, {
                     component_group: {
                         ...component_group,
                     },
@@ -94,7 +95,7 @@ export async function copyComponents(clients, NOW, toDisk = false, created_count
     }
     // Update parent_id for component groups
     for await (const [key, component_group] of source_component_groups) {
-        const endpoint = `/spaces/${target.spaceId}/component_groups/`;
+        const endpoint = `/spaces/${targetSpaceId}/component_groups/`;
         const component_group_id = target_component_groups.get(key)?.id;
         const component_group_parent_id = source_component_groups.get(key)?.parent_id;
         if (!component_group_parent_id) {
@@ -106,7 +107,7 @@ export async function copyComponents(clients, NOW, toDisk = false, created_count
         })?.[0];
         const targetComponentGroupParentId = target_component_groups.get(componentGroupParentName)?.id;
         try {
-            const res = await target.client.put(`${endpoint}${component_group_id}`, {
+            const res = await targetClient.put(`${endpoint}${component_group_id}`, {
                 component_group: {
                     ...component_group,
                     parent_id: targetComponentGroupParentId,
@@ -137,11 +138,11 @@ export async function copyComponents(clients, NOW, toDisk = false, created_count
             is_nestable,
             component_group_uuid,
         };
-        const endpoint = `/spaces/${target.spaceId}/components/`;
+        const endpoint = `/spaces/${targetSpaceId}/components/`;
         const component_id = target_components.get(key)?.id;
         if (component_id) {
             try {
-                const res = await target.client.put(`${endpoint}${component_id}`, {
+                const res = await targetClient.put(`${endpoint}${component_id}`, {
                     component: { ...component, id: component_id },
                 });
                 const { id, name } = res.data.component;
@@ -155,7 +156,7 @@ export async function copyComponents(clients, NOW, toDisk = false, created_count
         }
         else {
             try {
-                const res = await target.client.post(endpoint, {
+                const res = await targetClient.post(endpoint, {
                     component,
                 });
                 const { id, name } = res.data.component;
