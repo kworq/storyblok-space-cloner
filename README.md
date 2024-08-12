@@ -1,5 +1,8 @@
 # Storyblok Space Cloner
 
+> **⚠️ Warning:**  
+> As a precaution, it is highly recommended to duplicate your space within each account that it is associated with before proceeding. See [here](https://www.storyblok.com/docs/how-to-duplicate-a-space) for details. If you mistakenly mix up your source and target environments, you could unintentionally overwrite Blocks or Stories that share the same name, leading to permanent loss of data. This package uses the Storyblok Management API, which requires a personal access token for each account that is used. This token grants access to all associated spaces for your account, along with their respective permissions. Use with caution and at your own risk.
+
 ## Description
 This package provides tools to efficiently copy components, stories, and assets from one Storyblok space to another. It is designed to simplify the process of cloning spaces for development, testing, or migration purposes, ensuring a seamless transfer of content and structure.
 
