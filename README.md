@@ -27,8 +27,13 @@ const config = {
   TARGET_OAUTH_TOKEN: process.env.TARGET_OAUTH_TOKEN,
   SOURCE_SPACE_ID: process.env.SOURCE_SPACE_ID,
   TARGET_SPACE_ID: process.env.TARGET_SPACE_ID,
-  API_REGION: process.env.API_REGION,
   API_ENDPOINT: process.env.API_ENDPOINT,
+  API_REGION: process.env.API_REGION,
+  // If either or both specific endpoints and regions are not provided, API_ENDPOINT and API_REGION will used.
+  // SOURCE_API_ENDPOINT: process.env.SOURCE_API_ENDPOINT,
+  // SOURCE_API_REGION: process.env.SOURCE_API_REGION,
+  // TARGET_API_ENDPOINT: process.env.TARGET_API_ENDPOINT,
+  // TARGET_API_REGION: process.env.TARGET_API_REGION,
 };
 
 const cloner = new StoryblokSpaceCloner(config);

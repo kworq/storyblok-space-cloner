@@ -11,6 +11,10 @@ interface Config {
   TARGET_SPACE_ID: string;
   API_ENDPOINT: string;
   API_REGION: string;
+  SOURCE_API_ENDPOINT?: string;
+  SOURCE_API_REGION?: string;
+  TARGET_API_ENDPOINT?: string;
+  TARGET_API_REGION?: string;
 }
 
 export default class StoryblokSpaceCloner {
@@ -28,17 +32,17 @@ export default class StoryblokSpaceCloner {
     const SourceStoryblok = new StoryblokClient(
       {
         oauthToken: this.config.SOURCE_OAUTH_TOKEN,
-        region: this.config.API_REGION,
+        region: this.config.SOURCE_API_REGION ?? this.config.API_REGION,
       },
-      this.config.API_ENDPOINT
+      this.config.SOURCE_API_ENDPOINT ?? this.config.API_ENDPOINT
     );
 
     const TargetStoryblok = new StoryblokClient(
       {
         oauthToken: this.config.TARGET_OAUTH_TOKEN,
-        region: this.config.API_REGION,
+        region: this.config.TARGET_API_REGION ?? this.config.API_REGION,
       },
-      this.config.API_ENDPOINT
+      this.config.TARGET_API_ENDPOINT ?? this.config.API_ENDPOINT
     );
 
     const clients = {
