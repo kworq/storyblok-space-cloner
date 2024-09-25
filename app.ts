@@ -2,13 +2,17 @@ import "dotenv/config";
 import StoryblokSpaceCloner from "./src/index";
 
 const config = {
-  SOURCE_OAUTH_TOKEN: process.env.SOURCE_OAUTH_TOKEN as string,
-  TARGET_OAUTH_TOKEN: process.env.TARGET_OAUTH_TOKEN as string,
-  SOURCE_SPACE_ID: process.env.SOURCE_SPACE_ID as string,
-  TARGET_SPACE_ID: process.env.TARGET_SPACE_ID as string,
-  API_REGION: process.env.API_REGION as string,
-  API_ENDPOINT: process.env.API_ENDPOINT as string,
-};
+  SOURCE_OAUTH_TOKEN: process.env.SOURCE_OAUTH_TOKEN,
+  TARGET_OAUTH_TOKEN: process.env.TARGET_OAUTH_TOKEN,
+  SOURCE_SPACE_ID: process.env.SOURCE_SPACE_ID,
+  TARGET_SPACE_ID: process.env.TARGET_SPACE_ID,
+  API_REGION: process.env.API_REGION,
+  API_ENDPOINT: process.env.API_ENDPOINT,
+  SOURCE_API_REGION: process.env.SOURCE_API_REGION,
+  SOURCE_API_ENDPOINT: process.env.SOURCE_API_ENDPOINT,
+  TARGET_API_REGION: process.env.TARGET_API_REGION,
+  TARGET_API_ENDPOINT: process.env.TARGET_API_ENDPOINT,
+} as StoryblokSpaceClonerConfig;
 
 const cloner = new StoryblokSpaceCloner(config);
 
