@@ -11,12 +11,12 @@ export default class StoryblokSpaceCloner {
     async copy(options) {
         const SourceStoryblok = new StoryblokClient({
             oauthToken: this.config.SOURCE_OAUTH_TOKEN,
-            region: this.config.API_REGION,
-        }, this.config.API_ENDPOINT);
+            region: this.config.SOURCE_API_REGION ?? this.config.API_REGION,
+        }, this.config.SOURCE_API_ENDPOINT ?? this.config.API_ENDPOINT);
         const TargetStoryblok = new StoryblokClient({
             oauthToken: this.config.TARGET_OAUTH_TOKEN,
-            region: this.config.API_REGION,
-        }, this.config.API_ENDPOINT);
+            region: this.config.TARGET_API_REGION ?? this.config.API_REGION,
+        }, this.config.TARGET_API_ENDPOINT ?? this.config.API_ENDPOINT);
         const clients = {
             source: { client: SourceStoryblok, spaceId: this.config.SOURCE_SPACE_ID },
             target: { client: TargetStoryblok, spaceId: this.config.TARGET_SPACE_ID },
