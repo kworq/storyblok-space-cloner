@@ -10,9 +10,11 @@ declare global {
         SOURCE_API_REGION?: string;
         TARGET_API_ENDPOINT?: string;
         TARGET_API_REGION?: string;
+        TO_DISK_PATH?: string;
     }
 }
 export default class StoryblokSpaceCloner {
+    fullPath: string;
     config: StoryblokSpaceClonerConfig;
     constructor(config: StoryblokSpaceClonerConfig);
     copy(options: {

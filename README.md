@@ -34,6 +34,7 @@ const config = {
   // SOURCE_API_REGION: process.env.SOURCE_API_REGION,
   // TARGET_API_ENDPOINT: process.env.TARGET_API_ENDPOINT,
   // TARGET_API_REGION: process.env.TARGET_API_REGION,
+  // TO_DISK_PATH: "/path/to/backup/directory",
 };
 
 const cloner = new StoryblokSpaceCloner(config);

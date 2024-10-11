@@ -14,6 +14,7 @@ export async function copyStories(
   },
   NOW: string,
   toDisk = false,
+  fullPath: string,
   source_story_folders = new Map(),
   created_count = 0,
   updated_count = 0,
@@ -55,7 +56,7 @@ export async function copyStories(
     );
 
     if (toDisk) {
-      const __newdirname = path.join(__dirname, "../backups", NOW, "stories");
+      const __newdirname = path.join(fullPath, NOW, "stories");
       fs.mkdirSync(__newdirname, { recursive: true });
       const story = s_response.data.story;
       const jsonString = JSON.stringify(story, null, 2);
@@ -173,6 +174,7 @@ export async function copyStories(
       clients,
       NOW,
       toDisk,
+      fullPath,
       source_story_folders,
       created_count,
       updated_count,

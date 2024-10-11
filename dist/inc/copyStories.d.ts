@@ -8,7 +8,7 @@ export declare function copyStories(clients: {
         client: StoryblokClient;
         spaceId: string;
     };
-}, NOW: string, toDisk?: boolean, source_story_folders?: Map<any, any>, created_count?: number, updated_count?: number, page?: number): Promise<{
+}, NOW: string, toDisk: boolean | undefined, fullPath: string, source_story_folders?: Map<any, any>, created_count?: number, updated_count?: number, page?: number): Promise<{
     clone_type: string;
     files_created: number;
     from_total: any;
