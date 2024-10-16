@@ -37,7 +37,8 @@ describe("StoryblokSpaceCloner", () => {
     expect(copyComponents).toHaveBeenCalledWith(
       expect.any(Object),
       expect.any(String),
-      false
+      false,
+      expect.any(String)
     );
   });
 
@@ -51,7 +52,8 @@ describe("StoryblokSpaceCloner", () => {
     expect(copyStories).toHaveBeenCalledWith(
       expect.any(Object),
       expect.any(String),
-      false
+      false,
+      expect.any(String)
     );
   });
 
