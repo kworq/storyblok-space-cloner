@@ -35,10 +35,20 @@ describe("StoryblokSpaceCloner", () => {
   it("should call copyComponents when components option is provided", async () => {
     await cloner.copy({ components: true });
     expect(copyComponents).toHaveBeenCalledWith(
-      expect.any(Object),
-      expect.any(String),
-      false,
-      expect.any(String)
+      expect.objectContaining({
+        source: expect.objectContaining({
+          client: expect.anything(),
+          spaceId: "source-space-id",
+        }),
+        target: expect.objectContaining({
+          client: expect.anything(),
+          spaceId: "target-space-id",
+        }),
+      }),
+      expect.any(String), // NOW
+      false, // toDisk
+      expect.any(String), // toDiskPath
+      undefined // fromDisk
     );
   });
 
