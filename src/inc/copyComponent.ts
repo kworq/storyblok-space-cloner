@@ -1,10 +1,6 @@
 import type StoryblokClient from "storyblok-js-client";
 import path from "path";
 import fs from "fs";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 export async function copyComponents(
   clients: {
@@ -13,51 +9,73 @@ export async function copyComponents(
   },
   NOW: string,
   toDisk = false,
-  fullPath: string,
+  toDiskPath: string,
+  fromDisk: { path: string } | undefined,
   created_count = 0,
   updated_count = 0
 ) {
   const { client: sourceClient, spaceId: sourceSpaceId } = clients.source;
   const { client: targetClient, spaceId: targetSpaceId } = clients.target;
-  const s_response = await sourceClient.get(
-    `/spaces/${sourceSpaceId}/components/`,
-    {}
-  );
-  const source_components = new Map();
-  const source_component_groups = new Map();
-  const sourceComponents = s_response.data?.components ?? [s_response.data];
-  const sourceGroups = s_response.data?.component_groups ?? [s_response.data];
 
-  if (toDisk) {
-    for await (const type of Object.keys(s_response.data)) {
-      const __newdirname = path.join(fullPath, NOW, type);
-      fs.mkdirSync(__newdirname, { recursive: true });
-      s_response.data[type].forEach(async (item: typeof s_response.data) => {
-        const jsonString = JSON.stringify(item, null, 2);
-        const fileName = `${item.name}.json`;
-        const filePath = path.join(__newdirname, fileName);
+  let sourceComponents: { name: string }[] = [];
+  let sourceGroups: { name: string }[] = [];
 
-        try {
-          await fs.promises.writeFile(filePath, jsonString);
-          console.log("Successfully wrote Component JSON to file:", fileName);
-        } catch (e) {
-          console.error("Error writing file:", e);
-        }
-      });
+  if (!fromDisk) {
+    const s_response = await sourceClient.get(
+      `/spaces/${sourceSpaceId}/components/`,
+      {}
+    );
+
+    sourceComponents = s_response.data?.components ?? [s_response.data];
+    sourceGroups = s_response.data?.component_groups ?? [s_response.data];
+
+    if (toDisk) {
+      for await (const type of Object.keys(s_response.data)) {
+        const __newdirname = path.join(toDiskPath, NOW, type);
+        fs.mkdirSync(__newdirname, { recursive: true });
+        s_response.data[type].forEach(async (item: typeof s_response.data) => {
+          const jsonString = JSON.stringify(item, null, 2);
+          const fileName = `${item.name}.json`;
+          const filePath = path.join(__newdirname, fileName);
+
+          try {
+            await fs.promises.writeFile(filePath, jsonString);
+            console.log("Successfully wrote Component JSON to file:", fileName);
+          } catch (e) {
+            console.error("Error writing file:", e);
+          }
+        });
+      }
+
+      return {
+        clone_type: "components",
+        files_created: created_count,
+        components_copied: sourceComponents.length,
+        component_groups_copied: sourceGroups.length,
+      };
     }
-
-    return {
-      clone_type: "components",
-      files_created: created_count,
-      components_copied: sourceComponents.length,
-      component_groups_copied: sourceGroups.length,
-    };
+  } else {
+    const fromDiskPath = fromDisk.path;
+    sourceComponents = fs
+      .readdirSync(`${fromDiskPath}/components`)
+      .map((file) => {
+        const filePath = path.join(fromDiskPath, "components", file);
+        return JSON.parse(fs.readFileSync(filePath, "utf-8"));
+      });
+    sourceGroups = fs
+      .readdirSync(`${fromDiskPath}/component_groups`)
+      .map((file) => {
+        const filePath = path.join(fromDiskPath, "component_groups", file);
+        return JSON.parse(fs.readFileSync(filePath, "utf-8"));
+      });
   }
 
-  sourceComponents?.forEach((component: typeof sourceComponents) => {
+  const source_components = new Map();
+  const source_component_groups = new Map();
+  sourceComponents?.forEach((component) => {
     source_components.set(component.name, component);
   });
-  sourceGroups?.forEach((component: typeof sourceComponents) => {
+  sourceGroups?.forEach((component) => {
     source_component_groups.set(component.name, component);
   });
 

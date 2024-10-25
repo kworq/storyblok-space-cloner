@@ -2,10 +2,6 @@ import type StoryblokClient from "storyblok-js-client";
 import { findValuesByKey, updateValues } from "../utils/assetRefFindReplace";
 import path from "path";
 import fs from "fs";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 export async function copyStories(
   clients: {
@@ -14,7 +10,7 @@ export async function copyStories(
   },
   NOW: string,
   toDisk = false,
-  fullPath: string,
+  toDiskPath: string,
   source_story_folders = new Map(),
   created_count = 0,
   updated_count = 0,
@@ -56,7 +52,7 @@ export async function copyStories(
     );
 
     if (toDisk) {
-      const __newdirname = path.join(fullPath, NOW, "stories");
+      const __newdirname = path.join(toDiskPath, NOW, "stories");
       fs.mkdirSync(__newdirname, { recursive: true });
       const story = s_response.data.story;
       const jsonString = JSON.stringify(story, null, 2);
@@ -174,7 +170,7 @@ export async function copyStories(
       clients,
       NOW,
       toDisk,
-      fullPath,
+      toDiskPath,
       source_story_folders,
       created_count,
       updated_count,
