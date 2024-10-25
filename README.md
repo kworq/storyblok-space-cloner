@@ -28,13 +28,14 @@ const config = {
   SOURCE_SPACE_ID: process.env.SOURCE_SPACE_ID,
   TARGET_SPACE_ID: process.env.TARGET_SPACE_ID,
   API_ENDPOINT: process.env.API_ENDPOINT,
-  API_REGION: process.env.API_REGION,
-  // If either or both specific endpoints and regions are not provided, API_ENDPOINT and API_REGION will used.
-  // SOURCE_API_ENDPOINT: process.env.SOURCE_API_ENDPOINT,
-  // SOURCE_API_REGION: process.env.SOURCE_API_REGION,
-  // TARGET_API_ENDPOINT: process.env.TARGET_API_ENDPOINT,
-  // TARGET_API_REGION: process.env.TARGET_API_REGION,
-  // TO_DISK_PATH: "/path/to/backup/directory",
+  API_REGION: process.env.API_REGION, 
+  SOURCE_API_ENDPOINT: process.env.SOURCE_API_ENDPOINT,
+  SOURCE_API_REGION: process.env.SOURCE_API_REGION,
+  TARGET_API_ENDPOINT: process.env.TARGET_API_ENDPOINT,
+  TARGET_API_REGION: process.env.TARGET_API_REGION,
+  // Where a specific endpoint and/or region is not provided, 
+  // API_ENDPOINT and API_REGION will used.
+  TO_DISK_PATH: "/path/to/backup/directory",
 };
 
 const cloner = new StoryblokSpaceCloner(config);
@@ -45,7 +46,19 @@ cloner.copy({
   // Currently if toDisk is set to true for `assets`,
   // it will not work, nor will it copy assets to the target space.
   components: { toDisk: false },
+  /*
+    Options for components: 
+    {
+      toDisk: boolean, 
+      fromDisk: { path: string }
+    }
+    If `fromDisk` option exists, `toDisk` is ignored.
+    For `fromDisk` option, `path` is the local absolute path directory and 
+    should have both `component_groups` and `components` directories within it.
+    These are the same direcories created when using the `toDisk` option
+  */
   stories: { toDisk: false },
+  // TODO: add fromDisk – will need to consider assets: local and/or remote
 });
 ```
 
