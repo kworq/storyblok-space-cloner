@@ -4,11 +4,11 @@ import { copyComponents } from "./inc/copyComponent.js";
 import { copyStories } from "./inc/copyStories.js";
 import { copyRefStories } from "./inc/copyStoryRefs.js";
 export default class StoryblokSpaceCloner {
-    fullPath;
+    toDiskPath;
     config;
     constructor(config) {
         this.config = config;
-        this.fullPath = this.config.TO_DISK_PATH
+        this.toDiskPath = this.config.TO_DISK_PATH
             ? `${this.config.TO_DISK_PATH.replace(/\/$/, "")}/${this.config.SOURCE_SPACE_ID}`
             : `${process.cwd()}/storyblok-spaces/${this.config.SOURCE_SPACE_ID}`;
     }
@@ -30,7 +30,10 @@ export default class StoryblokSpaceCloner {
             const ac = [];
             if (options.components) {
                 const toDisk = typeof options.components === "object" && options.components.toDisk;
-                ac.push(copyComponents(clients, NOW, toDisk, this.fullPath));
+                const fromDisk = typeof options.components === "object"
+                    ? options.components.fromDisk
+                    : undefined;
+                ac.push(copyComponents(clients, NOW, toDisk, this.toDiskPath, fromDisk));
             }
             if (options.assets) {
                 const toDisk = typeof options.assets == "object" && options.assets.toDisk;
@@ -44,7 +47,7 @@ export default class StoryblokSpaceCloner {
         if (options.stories) {
             const sr = [];
             const toDisk = typeof options.stories == "object" && options.stories.toDisk;
-            sr.push(await copyStories(clients, NOW, toDisk, this.fullPath));
+            sr.push(await copyStories(clients, NOW, toDisk, this.toDiskPath));
             if (!toDisk) {
                 sr.push(await copyRefStories(clients));
             }

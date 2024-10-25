@@ -8,11 +8,13 @@ export declare function copyComponents(clients: {
         client: StoryblokClient;
         spaceId: string;
     };
-}, NOW: string, toDisk: boolean | undefined, fullPath: string, created_count?: number, updated_count?: number): Promise<{
+}, NOW: string, toDisk: boolean | undefined, toDiskPath: string, fromDisk: {
+    path: string;
+} | undefined, created_count?: number, updated_count?: number): Promise<{
     clone_type: string;
     files_created: number;
-    components_copied: any;
-    component_groups_copied: any;
+    components_copied: number;
+    component_groups_copied: number;
     created?: undefined;
     updated?: undefined;
     from_total?: undefined;
@@ -20,7 +22,7 @@ export declare function copyComponents(clients: {
     clone_type: string;
     created: number;
     updated: number;
-    from_total: any;
+    from_total: number;
     files_created?: undefined;
     components_copied?: undefined;
     component_groups_copied?: undefined;

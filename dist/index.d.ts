@@ -14,18 +14,21 @@ declare global {
     }
 }
 export default class StoryblokSpaceCloner {
-    fullPath: string;
+    toDiskPath: string;
     config: StoryblokSpaceClonerConfig;
     constructor(config: StoryblokSpaceClonerConfig);
     copy(options: {
         assets?: boolean | {
-            toDisk: boolean;
+            toDisk?: boolean;
         };
         components?: boolean | {
-            toDisk: boolean;
+            toDisk?: boolean;
+            fromDisk?: {
+                path: string;
+            };
         };
         stories?: boolean | {
-            toDisk: boolean;
+            toDisk?: boolean;
         };
     }): Promise<void>;
 }
