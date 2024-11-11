@@ -55,7 +55,7 @@ cloner.copy({
     If `fromDisk` option exists, `toDisk` is ignored.
     For `fromDisk` option, `path` is the local absolute path directory and 
     should have both `component_groups` and `components` directories within it.
-    These are the same direcories created when using the `toDisk` option
+    These are the same directories created when using the `toDisk` option
   */
   stories: { toDisk: false },
   // TODO: add fromDisk – will need to consider assets: local and/or remote
