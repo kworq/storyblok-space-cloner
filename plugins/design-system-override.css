@@ -1,0 +1,25 @@
+:root {
+  font-family: Roboto, sans-serif;
+  font-size: 62.5%;
+}
+.flex {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+.flex-col {
+  flex-direction: column;
+}
+.flex-row {
+  flex-direction: row;
+  align-items: center;
+}
+.remove-button {
+  margin-left: 1rem;
+}
+.mt-auto {
+  margin-top: auto;
+}
+.sb-textfield__container {
+  flex-grow: 1;
+}

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useFieldPlugin } from '@storyblok/field-plugin/vue3'
-import { SbToggle, SbTextField, SbButton, SbIcon, SbCheckbox, SbSeparator } from '@storyblok/design-system'
 import { ref, watch, onMounted } from 'vue'
 
 const plugin = useFieldPlugin({
@@ -51,41 +50,8 @@ const initializeData = () => {
   }
 }
 
-const injectCSS = () => {
-  const style = document.createElement('style');
-  style.innerHTML = `
-    :root {
-      font-family: Roboto, sans-serif;
-      font-size: 62.5%;
-    }
-    .flex {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 2rem;
-    }
-    .flex-col {
-      flex-direction: column;
-    }
-    .flex-row {
-      flex-direction: row;
-      align-items: center;
-    }
-    .remove-button {
-      margin-left: 1rem;
-    }
-    .mt-auto {
-      margin-top: auto;
-    }
-    .sb-textfield__container {
-      flex-grow: 1;
-    }
-  `;
-  document.head.appendChild(style);
-}
-
 onMounted(() => {
   initializeData()
-  injectCSS()
 })
 
 const addFeature = () => {
