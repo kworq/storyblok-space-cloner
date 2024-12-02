@@ -58,6 +58,7 @@ export async function copyComponents(
     const fromDiskPath = fromDisk.path;
     sourceComponents = fs
       .readdirSync(`${fromDiskPath}/components`)
+      .filter((file) => file.endsWith(".json"))
       .map((file) => {
         const filePath = path.join(fromDiskPath, "components", file);
         return JSON.parse(fs.readFileSync(filePath, "utf-8"));
@@ -191,13 +192,10 @@ export async function copyComponents(
     )?.uuid;
 
     const component = {
-      name,
-      display_name,
-      schema,
-      image,
-      is_root,
-      is_nestable,
+      ..._component,
       component_group_uuid,
+      created_at: undefined,
+      updated_at: undefined,
     };
     const endpoint = `/spaces/${targetSpaceId}/components/`;
     const component_id = target_components.get(key)?.id;
