@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "@kworq/storyblok-space-cloner",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Tools to efficiently copy components, stories, and assets from one Storyblok space to another. Simplifies cloning for development, testing, or migration purposes, ensuring seamless transfer of content and structure.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
